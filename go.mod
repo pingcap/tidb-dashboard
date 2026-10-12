@@ -45,6 +45,7 @@ require (
 	github.com/swaggo/http-swagger v1.2.6
 	github.com/swaggo/swag v1.7.9
 	github.com/vmihailenco/msgpack/v5 v5.3.5
+	go.etcd.io/etcd/api/v3 v3.5.15
 	go.etcd.io/etcd/client/pkg/v3 v3.5.15
 	go.etcd.io/etcd/client/v3 v3.5.15
 	go.uber.org/atomic v1.9.0
@@ -111,7 +112,6 @@ require (
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	go.etcd.io/etcd/api/v3 v3.5.15 // indirect
 	go.uber.org/dig v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/arch v0.22.0 // indirect

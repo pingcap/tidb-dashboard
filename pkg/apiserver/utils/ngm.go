@@ -37,21 +37,27 @@ const (
 )
 
 const (
-	ngmCacheTTL = time.Second * 5
+	ngmCacheTTL            = time.Second * 5
+	ngmDashboardAuthHeader = "X-Ng-Monitoring-Dashboard-Token"
 )
 
-type ngmAddrCacheEntity struct {
-	address string
+type ngmTarget struct {
+	address            string
+	dashboardAuthToken string
+}
+
+type ngmTargetCacheEntity struct {
+	target  ngmTarget
 	err     error
 	cacheAt time.Time
 }
 
 type NgmProxy struct {
-	lifecycleCtx context.Context
-	etcdClient   *clientv3.Client
-	ngmReqGroup  singleflight.Group
-	ngmAddrCache atomic.Value
-	timeout      time.Duration
+	lifecycleCtx   context.Context
+	etcdClient     *clientv3.Client
+	ngmReqGroup    singleflight.Group
+	ngmTargetCache atomic.Value
+	timeout        time.Duration
 }
 
 func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client, config *config.Config) (*NgmProxy, error) {
@@ -71,16 +77,18 @@ func NewNgmProxy(lc fx.Lifecycle, etcdClient *clientv3.Client, config *config.Co
 
 func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ngmAddr, err := n.getNgmAddrFromCache()
+		target, err := n.getNgmTargetFromCache()
 		if err != nil {
 			rest.Error(c, err)
 			return
 		}
 
 		c.Request.URL.Path = targetPath
+		setNgmDashboardAuthHeader(c.Request, target.dashboardAuthToken)
 
-		ngmURL, _ := url.Parse(ngmAddr)
+		ngmURL, _ := url.Parse(target.address)
 		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
+		proxy.ModifyResponse = n.modifyNgmResponse
 		proxy.Transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: defaultTransportDialContext(&net.Dialer{
@@ -97,39 +105,64 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 	}
 }
 
-func (n *NgmProxy) getNgmAddrFromCache() (string, error) {
-	fn := func() (string, error) {
+func (n *NgmProxy) modifyNgmResponse(response *http.Response) error {
+	if response.StatusCode == http.StatusUnauthorized {
+		// A restarted ng-monitoring instance advertises a new token. Expire
+		// the cached target so the next request immediately refreshes it.
+		n.ngmTargetCache.Store(&ngmTargetCacheEntity{})
+
+		// Do not expose an internal authentication failure as a Dashboard
+		// authentication failure, which may cause clients to log users out.
+		response.StatusCode = http.StatusBadGateway
+		response.Status = fmt.Sprintf("%d %s", http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+	}
+	return nil
+}
+
+func setNgmDashboardAuthHeader(request *http.Request, token string) {
+	// Never trust or forward a caller-supplied internal credential.
+	request.Header.Del(ngmDashboardAuthHeader)
+	if token != "" {
+		request.Header.Set(ngmDashboardAuthHeader, token)
+	}
+}
+
+func (n *NgmProxy) getNgmTargetFromCache() (ngmTarget, error) {
+	fn := func() (ngmTarget, error) {
 		// Check whether cache is valid, and use the cache if possible.
-		if v := n.ngmAddrCache.Load(); v != nil {
-			entity := v.(*ngmAddrCacheEntity)
+		if v := n.ngmTargetCache.Load(); v != nil {
+			entity := v.(*ngmTargetCacheEntity)
 			if entity.cacheAt.Add(ngmCacheTTL).After(time.Now()) {
-				return entity.address, entity.err
+				return entity.target, entity.err
 			}
 		}
 
-		addr, err := n.resolveNgmAddress()
+		target, err := n.resolveNgmTarget()
 
-		n.ngmAddrCache.Store(&ngmAddrCacheEntity{
-			address: addr,
+		n.ngmTargetCache.Store(&ngmTargetCacheEntity{
+			target:  target,
 			err:     err,
 			cacheAt: time.Now(),
 		})
 
-		return addr, err
+		return target, err
 	}
 
 	resolveResult, err, _ := n.ngmReqGroup.Do("any_key", func() (interface{}, error) {
 		return fn()
 	})
-	return resolveResult.(string), err
+	return resolveResult.(ngmTarget), err
 }
 
-func (n *NgmProxy) resolveNgmAddress() (string, error) {
-	addr, err := topology.FetchNgMonitoringTopology(n.lifecycleCtx, n.etcdClient)
-	if err == nil && addr != "" {
-		return fmt.Sprintf("http://%s", addr), nil
+func (n *NgmProxy) resolveNgmTarget() (ngmTarget, error) {
+	info, err := topology.FetchNgMonitoringTopologyInfo(n.lifecycleCtx, n.etcdClient)
+	if err == nil && info != nil && info.Address != "" {
+		return ngmTarget{
+			address:            fmt.Sprintf("http://%s", info.Address),
+			dashboardAuthToken: info.DashboardAuthToken,
+		}, nil
 	}
-	return "", ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
+	return ngmTarget{}, ErrNgmNotStart.Wrap(err, "NgMonitoring component is not started")
 }
 
 func defaultTransportDialContext(dialer *net.Dialer) func(context.Context, string, string) (net.Conn, error) {

@@ -57,7 +57,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/tidb", s.getTiDBTopology)
 	endpoint.GET("/ticdc", s.getTiCDCTopology)
 	endpoint.GET("/tiproxy", s.getTiProxyTopology)
-	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopology)
+	endpoint.DELETE("/tidb/:address", auth.MWRequireWritePriv(), s.deleteTiDBTopology)
 	endpoint.GET("/store", s.getStoreTopology)
 	endpoint.GET("/pd", s.getPDTopology)
 	endpoint.GET("/tso", s.getTSOTopology)

@@ -11,6 +11,7 @@ import {
   IInstanceTableItem,
   InstanceStatus
 } from '@lib/utils/instanceTable'
+import { useIsWriteable } from '@lib/utils'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ClusterInfoContext } from '../context'
 
@@ -19,7 +20,7 @@ function StatusColumn({
   onHideTiDB
 }: {
   node: IInstanceTableItem
-  onHideTiDB: (node) => void
+  onHideTiDB?: (node) => void
 }) {
   const { t } = useTranslation()
 
@@ -29,27 +30,29 @@ function StatusColumn({
 
   return (
     <span>
-      {node.instanceKind === 'tidb' && node.status !== InstanceStatus.Up && (
-        <>
-          <Popconfirm
-            title={t(
-              'cluster_info.list.instance_table.actions.hide_db.confirm'
-            )}
-            onConfirm={onConfirm}
-          >
-            <Tooltip
+      {onHideTiDB &&
+        node.instanceKind === 'tidb' &&
+        node.status !== InstanceStatus.Up && (
+          <>
+            <Popconfirm
               title={t(
-                'cluster_info.list.instance_table.actions.hide_db.tooltip'
+                'cluster_info.list.instance_table.actions.hide_db.confirm'
               )}
+              onConfirm={onConfirm}
             >
-              <a>
-                <DeleteOutlined />
-              </a>
-            </Tooltip>
-          </Popconfirm>
-          <Divider type="vertical" />
-        </>
-      )}
+              <Tooltip
+                title={t(
+                  'cluster_info.list.instance_table.actions.hide_db.tooltip'
+                )}
+              >
+                <a>
+                  <DeleteOutlined />
+                </a>
+              </Tooltip>
+            </Popconfirm>
+            <Divider type="vertical" />
+          </>
+        )}
       <InstanceStatusBadge status={node.status} />
     </span>
   )
@@ -57,6 +60,7 @@ function StatusColumn({
 
 export default function ListPage() {
   const { t } = useTranslation()
+  const isWriteable = useIsWriteable()
 
   const ctx = useContext(ClusterInfoContext)
 
@@ -169,7 +173,10 @@ export default function ListPage() {
         minWidth: 100,
         maxWidth: 120,
         onRender: (node) => (
-          <StatusColumn node={node} onHideTiDB={handleHideTiDB} />
+          <StatusColumn
+            node={node}
+            onHideTiDB={isWriteable ? handleHideTiDB : undefined}
+          />
         )
       },
       {
@@ -220,7 +227,7 @@ export default function ListPage() {
         )
       }
     ],
-    [t, handleHideTiDB]
+    [t, handleHideTiDB, isWriteable]
   )
 
   return (

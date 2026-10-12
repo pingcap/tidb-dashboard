@@ -4,15 +4,18 @@ package logsearch
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -21,6 +24,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
+
+const downloadTokenTTL = 15 * time.Minute
 
 type Service struct {
 	// FIXME: Use fx.In
@@ -325,13 +330,44 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Router /logs/download/acquire_token [get]
 func (s *Service) GetDownloadToken(c *gin.Context) {
 	ids := c.QueryArray("id")
+	if err := s.validateDownloadTaskIDs(ids); err != nil {
+		rest.Error(c, err)
+		return
+	}
 	str := strings.Join(ids, ",")
-	token, err := utils.NewJWTString("logs/download", str)
+	token, err := utils.NewJWTStringWithExpire("logs/download", str, downloadTokenTTL)
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
+	c.Header("Cache-Control", "no-store")
 	c.String(http.StatusOK, token)
+}
+
+func (s *Service) validateDownloadTaskIDs(ids []string) error {
+	if len(ids) == 0 {
+		return rest.ErrBadRequest.New("Expect at least 1 target")
+	}
+
+	for _, id := range ids {
+		parsedID, err := strconv.ParseUint(id, 10, 64)
+		if err != nil || parsedID == 0 {
+			return rest.ErrBadRequest.New("Invalid task ID")
+		}
+
+		var task TaskModel
+		err = s.db.
+			Where("id = ? AND state = ?", parsedID, TaskStateFinished).
+			First(&task).
+			Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return rest.ErrBadRequest.New("Task is not ready for download")
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // @Summary Download logs

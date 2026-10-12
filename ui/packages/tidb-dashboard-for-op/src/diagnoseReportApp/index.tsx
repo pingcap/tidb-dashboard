@@ -31,7 +31,11 @@ function refineDiagnosisData() {
 i18n.addTranslations(translations)
 document.title = `${distro().tidb} Dashboard Diagnosis Report`
 
-ReactDOM.render(
-  <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,
-  document.getElementById('root')
-)
+function main() {
+  ReactDOM.render(
+    <DiagnosisReport diagnosisTables={refineDiagnosisData()} />,
+    document.getElementById('root')
+  )
+}
+
+window.addEventListener('dashboard:diagnose_report_event', main)

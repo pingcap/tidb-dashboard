@@ -18,7 +18,7 @@ import (
 func TestSearchLogRequestValidate(t *testing.T) {
 	for level := LogLevelUnknown; level <= LogLevelError; level++ {
 		req := SearchLogRequest{MinLevel: level}
-		pb, err := req.ConvertToPB(diagnosticspb.SearchLogRequest_Normal)
+		pb, err := req.convertToPBChecked(diagnosticspb.SearchLogRequest_Normal)
 		if err != nil {
 			t.Fatalf("valid level %d was rejected: %v", level, err)
 		}
@@ -29,7 +29,7 @@ func TestSearchLogRequestValidate(t *testing.T) {
 
 	for _, level := range []LogLevel{-1, LogLevelError + 1, 99} {
 		req := SearchLogRequest{MinLevel: level}
-		if _, err := req.ConvertToPB(diagnosticspb.SearchLogRequest_Normal); err == nil {
+		if _, err := req.convertToPBChecked(diagnosticspb.SearchLogRequest_Normal); err == nil {
 			t.Fatalf("invalid level %d was accepted", level)
 		}
 	}

@@ -195,7 +195,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 	if t.model.Error != nil {
 		return
 	}
-	req, err := t.taskGroup.model.SearchRequest.ConvertToPB(targetType)
+	req, err := t.taskGroup.model.SearchRequest.convertToPBChecked(targetType)
 	if err != nil {
 		t.setError(err)
 		return

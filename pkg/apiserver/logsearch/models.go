@@ -69,10 +69,7 @@ func (r *SearchLogRequest) Validate() error {
 	return nil
 }
 
-func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Target) (*diagnosticspb.SearchLogRequest, error) {
-	if err := r.Validate(); err != nil {
-		return nil, err
-	}
+func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Target) *diagnosticspb.SearchLogRequest {
 	levels := PBLogLevelSlice[r.MinLevel:]
 	return &diagnosticspb.SearchLogRequest{
 		StartTime: r.StartTime,
@@ -80,7 +77,14 @@ func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Tar
 		Levels:    levels,
 		Patterns:  r.Patterns,
 		Target:    target,
-	}, nil
+	}
+}
+
+func (r *SearchLogRequest) convertToPBChecked(target diagnosticspb.SearchLogRequest_Target) (*diagnosticspb.SearchLogRequest, error) {
+	if err := r.Validate(); err != nil {
+		return nil, err
+	}
+	return r.ConvertToPB(target), nil
 }
 
 func (r *SearchLogRequest) Scan(src interface{}) error {

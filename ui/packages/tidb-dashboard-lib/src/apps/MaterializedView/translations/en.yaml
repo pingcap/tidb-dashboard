@@ -18,7 +18,7 @@ materialized_view:
     materialized_view: Materialized View
     materialized_view_id: Materialized View ID
     refresh_start_time: Refresh Start Time
-    last_success_time: Last Success Time
+    last_success_time: Last Successful Refresh Snapshot Time
     alert_type: Alert Type
     refresh_failed: Refresh Failed
     update_time: Update Time
@@ -42,7 +42,7 @@ materialized_view:
     materialized_view:
       placeholder: Materialized View
     last_success_time:
-      placeholder: Last Success Time >=
+      placeholder: Last Successful Refresh Snapshot Time >=
     duration:
       placeholder: Min Duration (sec)
     schedule_duration:

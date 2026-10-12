@@ -88,14 +88,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 
 		ngmURL, _ := url.Parse(target.address)
 		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
-		proxy.ModifyResponse = func(response *http.Response) error {
-			if response.StatusCode == http.StatusUnauthorized {
-				// A restarted ng-monitoring instance advertises a new token. Expire
-				// the cached target so the next request immediately refreshes it.
-				n.ngmTargetCache.Store(&ngmTargetCacheEntity{})
-			}
-			return nil
-		}
+		proxy.ModifyResponse = n.modifyNgmResponse
 		proxy.Transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: defaultTransportDialContext(&net.Dialer{
@@ -110,6 +103,20 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
+}
+
+func (n *NgmProxy) modifyNgmResponse(response *http.Response) error {
+	if response.StatusCode == http.StatusUnauthorized {
+		// A restarted ng-monitoring instance advertises a new token. Expire
+		// the cached target so the next request immediately refreshes it.
+		n.ngmTargetCache.Store(&ngmTargetCacheEntity{})
+
+		// Do not expose an internal authentication failure as a Dashboard
+		// authentication failure, which may cause clients to log users out.
+		response.StatusCode = http.StatusBadGateway
+		response.Status = fmt.Sprintf("%d %s", http.StatusBadGateway, http.StatusText(http.StatusBadGateway))
+	}
+	return nil
 }
 
 func setNgmDashboardAuthHeader(request *http.Request, token string) {

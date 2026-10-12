@@ -195,7 +195,11 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 	if t.model.Error != nil {
 		return
 	}
-	req := t.taskGroup.model.SearchRequest.ConvertToPB(targetType)
+	req, err := t.taskGroup.model.SearchRequest.ConvertToPB(targetType)
+	if err != nil {
+		t.setError(err)
+		return
+	}
 	patterns := make([]string, len(req.Patterns))
 	for i, p := range req.Patterns {
 		patterns[i] = "(?i)" + p

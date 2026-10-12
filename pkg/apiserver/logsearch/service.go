@@ -114,6 +114,10 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.New("Expect at least 1 target"))
 		return
 	}
+	if err := req.Request.Validate(); err != nil {
+		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
+		return
+	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
 	taskGroup := TaskGroupModel{
 		SearchRequest: &req.Request,

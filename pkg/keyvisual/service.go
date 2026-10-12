@@ -3,8 +3,10 @@
 package keyvisual
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -254,7 +256,7 @@ func (s *Service) heatmaps(c *gin.Context) {
 		}
 		endTime = time.Unix(tsSec, 0)
 	}
-	if !startTime.Before(endTime) || (endKey != "" && startKey >= endKey) {
+	if !startTime.Before(endTime) {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -267,15 +269,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 		zap.String("type", typ),
 	)
 
-	if startKeyBytes, err := hex.DecodeString(startKey); err == nil {
-		startKey = string(startKeyBytes)
-	} else {
-		c.JSON(http.StatusBadRequest, "bad request")
-		return
-	}
-	if endKeyBytes, err := hex.DecodeString(endKey); err == nil {
-		endKey = string(endKeyBytes)
-	} else {
+	startKey, endKey, err := decodeKeyRange(startKey, endKey)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -289,6 +284,21 @@ func (s *Service) heatmaps(c *gin.Context) {
 	}
 	// ----------
 	c.JSON(http.StatusOK, resp)
+}
+
+func decodeKeyRange(startKey, endKey string) (string, string, error) {
+	startKeyBytes, err := hex.DecodeString(startKey)
+	if err != nil {
+		return "", "", fmt.Errorf("decode start key: %w", err)
+	}
+	endKeyBytes, err := hex.DecodeString(endKey)
+	if err != nil {
+		return "", "", fmt.Errorf("decode end key: %w", err)
+	}
+	if len(endKeyBytes) > 0 && bytes.Compare(startKeyBytes, endKeyBytes) >= 0 {
+		return "", "", fmt.Errorf("start key must be less than end key")
+	}
+	return string(startKeyBytes), string(endKeyBytes), nil
 }
 
 func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Client) {

@@ -33,7 +33,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	{
 		ep.Use(auth.MWAuthRequired())
 		ep.GET("/endpoints", s.GetEndpoints)
-		ep.POST("/endpoint", s.RequestEndpoint)
+		ep.POST("/endpoint", auth.MWRequireWritePriv(), s.RequestEndpoint)
 	}
 }
 

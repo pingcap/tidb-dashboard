@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
 	"path"
@@ -228,6 +227,15 @@ func loadDistroStringsRes() {
 	distro.ReplaceGlobal(distroStringsRes)
 }
 
+func newHTTPMux(uiHandler, apiHandler, swaggerHandler http.Handler) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
+	mux.Handle(config.UIPathPrefix, uiHandler)
+	mux.Handle(config.APIPathPrefix, apiHandler)
+	mux.Handle(config.SwaggerPathPrefix, swaggerHandler)
+	return mux
+}
+
 func main() {
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
@@ -272,12 +280,8 @@ func main() {
 	}
 	defer s.Stop(context.Background()) //nolint:errcheck
 
-	mux := http.DefaultServeMux
 	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
-	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
-	mux.Handle(config.UIPathPrefix, uiHandler)
-	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
-	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
+	mux := newHTTPMux(uiHandler, apiserver.Handler(s), swaggerserver.Handler())
 
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://%s/dashboard/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))

@@ -28,8 +28,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
 	endpoint.POST("/group/start", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.handleStartGroup)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
-	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.handleCancelGroup)
-	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
+	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.handleCancelGroup)
+	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.deleteGroup)
 
 	endpoint.GET("/action_token", auth.MWAuthRequired(), s.getActionToken)
 	endpoint.GET("/group/download", s.downloadGroup)

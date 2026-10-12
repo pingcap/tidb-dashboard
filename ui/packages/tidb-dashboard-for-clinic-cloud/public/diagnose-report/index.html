@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
     <link rel="icon" href="../distro-res/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../diagnoseReport.css?t=%TIME_PLACE_HOLDER%" />
@@ -20,14 +21,24 @@
         const orgId = searchParams.get('orgId') || ''
         const clusterId = searchParams.get('clusterId') || ''
         const reportId = searchParams.get('reportId') || ''
-        if (orgId === '' || clusterId === '' || reportId === '') {
-          window.alert('Invalid orgId, clusterId or reportId parameter!')
+        const reportToken = searchParams.get('reportToken') || ''
+        if (
+          orgId === '' ||
+          clusterId === '' ||
+          reportId === '' ||
+          reportToken === ''
+        ) {
+          window.alert(
+            'Invalid orgId, clusterId, reportId or reportToken parameter!'
+          )
           return
         }
 
         const token = localStorage.getItem('clinic.auth.csrf_token')
         const apiBasePath = `/clinic/api/v1/dashboard/proxy/cluster/${clusterId}/pd/dashboard/api`
-        const reportDataApiPath = `${apiBasePath}/diagnose/reports/${reportId}/data.js`
+        const reportDataApiPath = `${apiBasePath}/diagnose/reports/${reportId}/data.js?token=${encodeURIComponent(
+          reportToken
+        )}`
         // https://stackoverflow.com/a/67999347/2998877
         fetch(reportDataApiPath, {
           headers: {
@@ -36,7 +47,12 @@
             'x-csrf-token': token
           }
         })
-          .then((res) => res.blob())
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Failed to load diagnosis report: ${res.status}`)
+            }
+            return res.blob()
+          })
           .then((blob) => {
             var objectURL = URL.createObjectURL(blob)
             var sc = document.createElement('script')

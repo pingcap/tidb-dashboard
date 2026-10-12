@@ -765,13 +765,17 @@
                 }
             }
         },
-        "/diagnose/reports/{id}/data.js": {
+        "/diagnose/reports/{id}/action_token": {
             "get": {
-                "description": "Get sql diagnosis report data",
-                "produces": [
-                    "text/javascript"
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
                 ],
-                "summary": "SQL diagnosis report data",
+                "produces": [
+                    "text/plain"
+                ],
+                "summary": "Generate an action token for viewing a diagnosis report",
                 "parameters": [
                     {
                         "type": "string",
@@ -786,6 +790,57 @@
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnose/reports/{id}/data.js": {
+            "get": {
+                "description": "Get sql diagnosis report data",
+                "produces": [
+                    "text/javascript"
+                ],
+                "summary": "SQL diagnosis report data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "report id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report action token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     }
                 }
@@ -805,6 +860,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report action token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -812,6 +874,12 @@
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     }
                 }

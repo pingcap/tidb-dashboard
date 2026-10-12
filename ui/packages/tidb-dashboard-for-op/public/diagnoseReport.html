@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
     <meta name="x-distro-strings-res" content="__DISTRO_STRINGS_RES__" />
     <meta
       name="x-distro-assets-res-timestamp"
@@ -12,7 +13,6 @@
       href="%PUBLIC_URL%/distro-res/favicon.ico?t=__DISTRO_ASSETS_RES_TIMESTAMP__"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="./data.js"></script>
     <link
       rel="stylesheet"
       href="%PUBLIC_URL%/diagnoseReport.css?t=%TIME_PLACE_HOLDER%"
@@ -25,5 +25,28 @@
       type="module"
       src="%PUBLIC_URL%/diagnoseReport.js?t=%TIME_PLACE_HOLDER%"
     ></script>
+    <script>
+      window.addEventListener('load', function () {
+        const reportToken = new URLSearchParams(window.location.search).get(
+          'token'
+        )
+        if (!reportToken) {
+          window.alert('Invalid report token parameter!')
+          return
+        }
+
+        const dataScript = document.createElement('script')
+        dataScript.src = `./data.js?token=${encodeURIComponent(reportToken)}`
+        dataScript.onload = function () {
+          window.dispatchEvent(
+            new CustomEvent('dashboard:diagnose_report_event')
+          )
+        }
+        dataScript.onerror = function () {
+          window.alert('Failed to load diagnosis report data!')
+        }
+        document.head.appendChild(dataScript)
+      })
+    </script>
   </body>
 </html>

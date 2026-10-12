@@ -4,6 +4,7 @@ package diagnose
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -16,6 +17,7 @@ import (
 	"github.com/goccy/go-graphviz"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -27,7 +29,9 @@ import (
 )
 
 const (
-	timeLayout = "2006-01-02 15:04:05"
+	timeLayout           = "2006-01-02 15:04:05"
+	reportTokenIssuer    = "diagnose/report"
+	reportActionTokenTTL = 15 * time.Minute
 )
 
 var graphvizMutex sync.Mutex
@@ -63,6 +67,9 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		utils.MWConnectTiDB(s.tidbClient),
 		s.genReportHandler)
+	endpoint.GET("/reports/:id/action_token",
+		auth.MWAuthRequired(),
+		s.reportActionTokenHandler)
 	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
@@ -76,6 +83,41 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		utils.MWConnectTiDB((s.tidbClient)),
 		s.genDiagnosisHandler)
+}
+
+// @Summary Generate an action token for viewing a diagnosis report
+// @Produce plain
+// @Param id path string true "report id"
+// @Success 200 {string} string
+// @Router /diagnose/reports/{id}/action_token [get]
+// @Security JwtAuth
+// @Failure 400 {object} rest.ErrorResponse
+// @Failure 401 {object} rest.ErrorResponse
+func (s *Service) reportActionTokenHandler(c *gin.Context) {
+	id := c.Param("id")
+	if _, err := GetReport(s.db, id); errors.Is(err, gorm.ErrRecordNotFound) {
+		rest.Error(c, rest.ErrBadRequest.New("Report does not exist"))
+		return
+	} else if err != nil {
+		rest.Error(c, err)
+		return
+	}
+
+	token, err := utils.NewJWTStringWithExpire(reportTokenIssuer, id, reportActionTokenTTL)
+	if err != nil {
+		rest.Error(c, err)
+		return
+	}
+	c.Header("Cache-Control", "no-store")
+	c.String(http.StatusOK, token)
+}
+
+func validateReportActionToken(reportID, token string) error {
+	tokenReportID, err := utils.ParseJWTString(reportTokenIssuer, token)
+	if err != nil || tokenReportID != reportID {
+		return rest.ErrBadRequest.New("Invalid report action token")
+	}
+	return nil
 }
 
 func (s *Service) generateMetricsRelation(startTime, endTime time.Time, graphType string) (string, error) {
@@ -277,9 +319,18 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 // @Description Get sql diagnosis report HTML
 // @Produce html
 // @Param id path string true "report id"
+// @Param token query string true "report action token"
 // @Success 200 {string} string
+// @Failure 400 {object} rest.ErrorResponse
 // @Router /diagnose/reports/{id}/detail [get]
 func (s *Service) reportHTMLHandler(c *gin.Context) {
+	if err := validateReportActionToken(c.Param("id"), c.Query("token")); err != nil {
+		rest.Error(c, err)
+		return
+	}
+	c.Header("Cache-Control", "no-store")
+	c.Header("Referrer-Policy", "no-referrer")
+
 	defer func(old string) {
 		c.Request.URL.Path = old
 	}(c.Request.URL.Path)
@@ -292,10 +343,16 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 // @Description Get sql diagnosis report data
 // @Produce text/javascript
 // @Param id path string true "report id"
+// @Param token query string true "report action token"
 // @Success 200 {string} string
+// @Failure 400 {object} rest.ErrorResponse
 // @Router /diagnose/reports/{id}/data.js [get]
 func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
+	if err := validateReportActionToken(id, c.Query("token")); err != nil {
+		rest.Error(c, err)
+		return
+	}
 	report, err := GetReport(s.db, id)
 	if err != nil {
 		rest.Error(c, err)
@@ -303,6 +360,8 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 	}
 
 	data := "window.__diagnosis_data__ = " + report.Content
+	c.Header("Cache-Control", "no-store")
+	c.Header("Referrer-Policy", "no-referrer")
 	c.Data(http.StatusOK, "text/javascript", []byte(data))
 }
 

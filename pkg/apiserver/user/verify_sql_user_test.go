@@ -101,6 +101,15 @@ func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *check.C) {
 				"CONFIG":         {},
 			},
 		},
+		// 8
+		{
+			desc: "empty grantee",
+			input: []string{
+				"GRANT ALL PRIVILEGES ON *.* TO ",
+				"GRANT ALL PRIVILEGES ON *.* TO    ",
+			},
+			expected: map[string]struct{}{},
+		},
 	}
 
 	for i, v := range cases {

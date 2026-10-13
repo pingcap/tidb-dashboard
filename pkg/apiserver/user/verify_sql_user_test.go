@@ -66,6 +66,36 @@ func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *check.C) {
 			},
 			expected: map[string]struct{}{},
 		},
+		// 4
+		{
+			desc: "privilege-like text in account name",
+			input: []string{
+				"GRANT USAGE ON *.* TO 'dashboard,ALL PRIVILEGES ON ignored'@'%'",
+			},
+			expected: map[string]struct{}{
+				"USAGE": {},
+			},
+		},
+		// 5
+		{
+			desc: "privilege-like text in role name",
+			input: []string{
+				"GRANT `reader,ALL PRIVILEGES ON ignored`@`%` TO `test`@`%`",
+			},
+			expected: map[string]struct{}{},
+		},
+		// 6
+		{
+			desc: "spaces after privilege separators",
+			input: []string{
+				"GRANT PROCESS, SHOW DATABASES, CONFIG ON *.* TO 'dashboardAdmin'@'%'",
+			},
+			expected: map[string]struct{}{
+				"PROCESS":        {},
+				"SHOW DATABASES": {},
+				"CONFIG":         {},
+			},
+		},
 	}
 
 	for i, v := range cases {

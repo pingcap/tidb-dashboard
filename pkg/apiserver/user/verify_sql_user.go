@@ -68,7 +68,9 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 	return checkWriteablePriv(grants), nil
 }
 
-var grantRegex = regexp.MustCompile(`GRANT (.+) ON`)
+// Account and role names in SHOW GRANTS output may contain commas and " ON ".
+// Accept only TiDB's generated privilege-list grammar so names cannot be parsed as privileges.
+var grantPrivilegeListRegex = regexp.MustCompile(`^[A-Z][A-Z0-9_ ]*(, *[A-Z][A-Z0-9_ ]*)*$`)
 
 // Currently, There are 2 kinds of grant output format in TiDB:
 // - GRANT [grants] ON [db.table] TO [user]
@@ -82,12 +84,22 @@ func parseUserGrants(grantRows []string) map[string]struct{} {
 	grants := map[string]struct{}{}
 
 	for _, row := range grantRows {
-		m := grantRegex.FindStringSubmatch(row)
-		if len(m) == 2 {
-			curRowGrants := strings.SplitSeq(m[1], ",")
-			for grant := range curRowGrants {
-				grants[grant] = struct{}{}
-			}
+		row, ok := strings.CutPrefix(row, "GRANT ")
+		if !ok {
+			continue
+		}
+		privilegeList, grantTarget, ok := strings.Cut(row, " ON ")
+		if !ok || !grantPrivilegeListRegex.MatchString(privilegeList) {
+			continue
+		}
+		// Dashboard privileges must be granted globally. Database- and table-level
+		// ALL PRIVILEGES do not include the cluster privileges required by Dashboard.
+		grantScope, _, ok := strings.Cut(grantTarget, " TO ")
+		if !ok || grantScope != "*.*" {
+			continue
+		}
+		for grant := range strings.SplitSeq(privilegeList, ",") {
+			grants[strings.TrimSpace(grant)] = struct{}{}
 		}
 	}
 

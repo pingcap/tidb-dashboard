@@ -88,8 +88,14 @@ func parseUserGrants(grantRows []string) map[string]struct{} {
 		if !ok {
 			continue
 		}
-		privilegeList, _, ok := strings.Cut(row, " ON ")
+		privilegeList, grantTarget, ok := strings.Cut(row, " ON ")
 		if !ok || !grantPrivilegeListRegex.MatchString(privilegeList) {
+			continue
+		}
+		// Dashboard privileges must be granted globally. Database- and table-level
+		// ALL PRIVILEGES do not include the cluster privileges required by Dashboard.
+		grantScope, _, ok := strings.Cut(grantTarget, " TO ")
+		if !ok || grantScope != "*.*" {
 			continue
 		}
 		for grant := range strings.SplitSeq(privilegeList, ",") {

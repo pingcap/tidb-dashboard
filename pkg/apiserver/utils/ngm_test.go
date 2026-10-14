@@ -3,15 +3,17 @@
 package utils
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestSetNgmDashboardAuthHeader(t *testing.T) {
+func TestPrepareNgmProxyRequest(t *testing.T) {
 	for _, tc := range []struct {
 		name          string
 		token         string
@@ -21,10 +23,25 @@ func TestSetNgmDashboardAuthHeader(t *testing.T) {
 		{name: "old ng-monitoring", token: "", expectedToken: ""},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodGet, "/", nil)
+			request := httptest.NewRequest(http.MethodPost, "/source?query=value", strings.NewReader("request body"))
+			request.Header.Set("Authorization", "Bearer dashboard-session")
+			request.Header.Set("Cookie", "dashboard_session=session-value")
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("X-Request-ID", "request-id")
 			request.Header.Set(ngmDashboardAuthHeader, "caller-supplied-token")
-			setNgmDashboardAuthHeader(request, tc.token)
+
+			prepareNgmProxyRequest(request, tc.token)
+
+			require.Empty(t, request.Header.Get("Authorization"))
+			require.Equal(t, "dashboard_session=session-value", request.Header.Get("Cookie"))
+			require.Equal(t, "application/json", request.Header.Get("Content-Type"))
+			require.Equal(t, "request-id", request.Header.Get("X-Request-ID"))
 			require.Equal(t, tc.expectedToken, request.Header.Get(ngmDashboardAuthHeader))
+			require.Equal(t, http.MethodPost, request.Method)
+			require.Equal(t, "query=value", request.URL.RawQuery)
+			body, err := io.ReadAll(request.Body)
+			require.NoError(t, err)
+			require.Equal(t, "request body", string(body))
 		})
 	}
 }

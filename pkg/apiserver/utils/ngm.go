@@ -84,7 +84,7 @@ func (n *NgmProxy) Route(targetPath string) gin.HandlerFunc {
 		}
 
 		c.Request.URL.Path = targetPath
-		setNgmDashboardAuthHeader(c.Request, target.dashboardAuthToken)
+		prepareNgmProxyRequest(c.Request, target.dashboardAuthToken)
 
 		ngmURL, _ := url.Parse(target.address)
 		proxy := httputil.NewSingleHostReverseProxy(ngmURL)
@@ -119,7 +119,11 @@ func (n *NgmProxy) modifyNgmResponse(response *http.Response) error {
 	return nil
 }
 
-func setNgmDashboardAuthHeader(request *http.Request, token string) {
+func prepareNgmProxyRequest(request *http.Request, token string) {
+	// Dashboard authenticates and authorizes the caller before proxying the
+	// request. Do not expose those credentials to another service.
+	request.Header.Del("Authorization")
+
 	// Never trust or forward a caller-supplied internal credential.
 	request.Header.Del(ngmDashboardAuthHeader)
 	if token != "" {

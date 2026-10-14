@@ -56,6 +56,7 @@ import { InstanceType } from './ListDetail/ListDetailTable'
 import { isDistro } from '@lib/utils/distro'
 import { TopSQLContext } from '../../context'
 import { normalizeTopSQLResponse } from '../../utils/response'
+import { resolveTopSQLOrderByConfig } from '../../utils/orderBy'
 import {
   createLatestTopSQLInstanceRequest,
   isTopSQLInstanceAllowed,
@@ -253,12 +254,16 @@ export function TopSQLList() {
     instance?.instance_type,
     queryParams.group_by
   ])
+  const { showOrderBy, allowedOrderBy } = useMemo(
+    () => resolveTopSQLOrderByConfig(ctx?.cfg, instance?.instance_type),
+    [ctx?.cfg, instance?.instance_type]
+  )
   const orderBy = useMemo(() => {
-    if (ctx?.cfg.showOrderBy !== true) {
+    if (!showOrderBy) {
       return OrderBy.CpuTime
     }
     const order = normalizeOrderBy(queryParams.order_by)
-    if (ctx?.cfg.allowedOrderBy && !ctx.cfg.allowedOrderBy.includes(order)) {
+    if (allowedOrderBy && !allowedOrderBy.includes(order)) {
       return OrderBy.CpuTime
     }
     if (
@@ -287,8 +292,8 @@ export function TopSQLList() {
     }
     return order
   }, [
-    ctx?.cfg.allowedOrderBy,
-    ctx?.cfg.showOrderBy,
+    allowedOrderBy,
+    showOrderBy,
     instance?.instance_type,
     queryParams.order_by,
     detailedIoConfigLoaded,
@@ -306,10 +311,7 @@ export function TopSQLList() {
           ]
         : [OrderBy.LogicalIoBytes]
       : [])
-  ].filter(
-    (value) =>
-      !ctx?.cfg.allowedOrderBy || ctx.cfg.allowedOrderBy.includes(value)
-  )
+  ].filter((value) => !allowedOrderBy || allowedOrderBy.includes(value))
   const orderByTestIds: Record<OrderBy, string> = {
     [OrderBy.CpuTime]: 'cpu_time',
     [OrderBy.NetworkBytes]: 'network_bytes',
@@ -596,7 +598,7 @@ export function TopSQLList() {
                     ))}
                   </Select>
                 )}
-              {ctx?.cfg.showOrderBy && instance && (
+              {showOrderBy && instance && (
                 <Select
                   style={{ width: ORDER_BY_SELECT_WIDTH, maxWidth: '100%' }}
                   value={orderBy}
@@ -838,7 +840,8 @@ const useTopSQLData = (
             : undefined,
           _instance.instance,
           _instance.instance_type,
-          ctx?.cfg.showOrderBy === true || ctx?.cfg.preserveResponseOrder
+          resolveTopSQLOrderByConfig(ctx?.cfg, _instance.instance_type)
+            .showOrderBy || ctx?.cfg.preserveResponseOrder
             ? orderBy
             : undefined,
           String(start),

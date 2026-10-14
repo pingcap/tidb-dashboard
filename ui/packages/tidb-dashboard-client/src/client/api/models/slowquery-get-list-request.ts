@@ -28,6 +28,12 @@ export interface SlowqueryGetListRequest {
     'begin_time'?: number;
     /**
      * 
+     * @type {string}
+     * @memberof SlowqueryGetListRequest
+     */
+    'commit_backoff_types'?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof SlowqueryGetListRequest
      */
@@ -74,6 +80,12 @@ export interface SlowqueryGetListRequest {
      * @memberof SlowqueryGetListRequest
      */
     'plans'?: Array<string>;
+    /**
+     * Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
+     * @type {string}
+     * @memberof SlowqueryGetListRequest
+     */
+    'prewrite_backoff_types'?: string;
     /**
      * 
      * @type {Array<string>}

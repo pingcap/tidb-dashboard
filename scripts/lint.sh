@@ -21,8 +21,10 @@ if [[ -f "${LINT_BIN}" ]]; then
 fi
 
 if [ "${NEED_DOWNLOAD}" = true ]; then
-  echo "  - Download golangci-lint binary"
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v${REQUIRED_VERSION}
+  echo "  - Install golangci-lint"
+  GO_TOOLCHAIN="$(go env GOVERSION)"
+  GOBIN="${PROJECT_DIR}/bin" GOTOOLCHAIN="${GO_TOOLCHAIN}" \
+    go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v${REQUIRED_VERSION}"
 fi
 
 echo "+ Run lints for Go source code"

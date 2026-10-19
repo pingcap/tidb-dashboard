@@ -81,7 +81,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 	endpoint.POST("/diagnosis",
 		auth.MWAuthRequired(),
-		utils.MWConnectTiDB((s.tidbClient)),
+		utils.MWConnectTiDB(s.tidbClient),
 		s.genDiagnosisHandler)
 }
 

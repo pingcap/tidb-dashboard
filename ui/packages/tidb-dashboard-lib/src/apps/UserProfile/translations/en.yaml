@@ -10,7 +10,8 @@ user_profile:
       reset_user: Currently Signed-in SQL User
       client_id: OIDC Client ID
       client_secret: OIDC Client Secret
-      client_secret_tooltip: Optional, it is needed when using "Client Secret Post" authentication method, and it is only can be seen when setting.
+      client_secret_tooltip: Leave blank to keep the stored secret for the same provider and Client ID. When changing provider or Client ID, enter a new secret or explicitly clear it.
+      clear_client_secret: Clear the stored Client Secret (only if the provider does not require it)
       scopes: Additional OIDC Scopes (space-separated)
       discovery_url: OIDC Discovery URL
       is_read_only: Sign in as read-only privilege

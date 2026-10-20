@@ -38,8 +38,12 @@ export function SSOForm() {
 
   useChange(() => {
     if (config) {
-      form.setFieldsValue(config)
-      initialForm.current = { ...initialForm.current, ...config }
+      form.setFieldsValue({ ...config, clear_client_secret: false })
+      initialForm.current = {
+        ...initialForm.current,
+        ...config,
+        clear_client_secret: false
+      }
     }
   }, [config])
 
@@ -65,9 +69,18 @@ export function SSOForm() {
     async (data) => {
       setIsPosting(true)
       try {
-        const { sql_user, password, ...config } = data
-        await ctx!.ds.userSSOSetConfig({ config, sql_user, password })
-        form.setFieldsValue({ password: '' })
+        const { sql_user, password, clear_client_secret, ...config } = data
+        await ctx!.ds.userSSOSetConfig({
+          config,
+          sql_user,
+          password,
+          clear_client_secret
+        })
+        form.setFieldsValue({
+          password: '',
+          client_secret: '',
+          clear_client_secret: false
+        })
         sendRequest()
         impSendRequest()
         setIsChanged(false)
@@ -134,13 +147,30 @@ export function SSOForm() {
                       tooltip={t('user_profile.sso.form.client_secret_tooltip')}
                     >
                       <Input
-                        disabled={!canManageSSO}
+                        disabled={
+                          !canManageSSO ||
+                          f.getFieldValue('clear_client_secret')
+                        }
                         style={{ width: 320 }}
                         placeholder="********"
                       />
                     </Form.Item>
                   )
                 }
+                {config?.client_secret !== undefined && (
+                  <Form.Item name="clear_client_secret" valuePropName="checked">
+                    <Checkbox
+                      disabled={!canManageSSO}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          form.setFieldsValue({ client_secret: '' })
+                        }
+                      }}
+                    >
+                      {t('user_profile.sso.form.clear_client_secret')}
+                    </Checkbox>
+                  </Form.Item>
+                )}
                 <Form.Item
                   name="scopes"
                   label={t('user_profile.sso.form.scopes')}

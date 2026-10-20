@@ -87,6 +87,7 @@ type testProvider struct {
 	server         *httptest.Server
 	key            *rsa.PrivateKey
 	signingAlgs    []string
+	clientSecret   string
 	token          string
 	subject        string
 	userInfoStatus int
@@ -102,6 +103,7 @@ func newTestProvider(t *testing.T) *testProvider {
 		p.mu.Lock()
 		token, subject, status, onToken := p.token, p.subject, p.userInfoStatus, p.onToken
 		algorithms := append([]string(nil), p.signingAlgs...)
+		clientSecret := p.clientSecret
 		p.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
@@ -113,6 +115,18 @@ func newTestProvider(t *testing.T) *testProvider {
 				IDTokenSigningAlgValuesSupported: algorithms,
 			})
 		case "/token":
+			if clientSecret != "" {
+				_, secret, basic := r.BasicAuth()
+				if !basic {
+					_ = r.ParseForm()
+					secret = r.Form.Get("client_secret")
+				}
+				if secret != clientSecret {
+					w.WriteHeader(http.StatusUnauthorized)
+					_, _ = w.Write([]byte(`{"error":"invalid_client"}`))
+					return
+				}
+			}
 			if onToken != nil {
 				onToken()
 			}

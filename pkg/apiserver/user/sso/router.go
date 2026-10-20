@@ -131,6 +131,8 @@ type SetConfigRequest struct {
 	Config   config.SSOCoreConfig `json:"config"`
 	SQLUser  string               `json:"sql_user" binding:"required"`
 	Password string               `json:"password"`
+	// ClearClientSecret explicitly removes a stored secret instead of preserving a redacted value.
+	ClearClientSecret bool `json:"clear_client_secret"`
 }
 
 // @ID userSSOSetConfig

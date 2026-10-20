@@ -2736,6 +2736,8 @@ export interface SsoSetConfigRequest {
     /** SQL credentials must be supplied again for every SSO configuration change. */
     'sql_user': string;
     'password'?: string;
+    /** Explicitly remove the stored OIDC client secret. Blank secrets otherwise preserve it for the same provider and client. */
+    'clear_client_secret'?: boolean;
 }
 
 

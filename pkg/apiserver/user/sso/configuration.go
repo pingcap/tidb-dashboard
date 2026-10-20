@@ -87,6 +87,23 @@ func (s *Service) saveConfigLocked(req SetConfigRequest) (*SSOImpersonationModel
 		if err != nil {
 			return nil, rest.ErrBadRequest.WrapWithNoMessage(err)
 		}
+		current, err := s.configManager.Get()
+		if err != nil {
+			return nil, err
+		}
+		if req.ClearClientSecret && req.Config.ClientSecret != "" {
+			return nil, rest.ErrBadRequest.New("Cannot set and clear the OIDC client secret together")
+		}
+		if req.Config.ClientSecret == "" && !req.ClearClientSecret && current.SSO.CoreConfig.ClientSecret != "" {
+			old := current.SSO
+			// GET /config redacts the secret. A blank value means unchanged only
+			// within the same provider and client; never forward it to a new one.
+			if !old.CoreConfig.Enabled || old.CoreConfig.DiscoveryURL != req.Config.DiscoveryURL ||
+				old.CoreConfig.ClientID != req.Config.ClientID || (old.Issuer != "" && old.Issuer != wellKnown.Issuer) {
+				return nil, rest.ErrBadRequest.New("Re-enter or explicitly clear the OIDC client secret when changing provider or client ID")
+			}
+			dConfig.CoreConfig.ClientSecret = old.CoreConfig.ClientSecret
+		}
 		dConfig.Issuer = wellKnown.Issuer
 		dConfig.JWKSURL = wellKnown.JWKSURI
 		dConfig.SigningAlgs = wellKnown.IDTokenSigningAlgValuesSupported

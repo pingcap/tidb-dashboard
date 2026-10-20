@@ -50,8 +50,12 @@ login remains available for recovery.
 Upgrade the Dashboard backend and bundled UI together. A new UI connected to a legacy
 backend displays an upgrade requirement and does not fall back to insecure SSO management.
 OIDC ID tokens signed with HS256, HS384, or HS512 are verified using the configured client
-secret; asymmetric signatures continue to use the provider's JWKS. Re-enter the client
-secret when saving a configuration that requires it, since the settings API hides it.
+secret; asymmetric signatures continue to use the provider's JWKS. The settings API hides
+the client secret. Leaving it blank preserves the stored secret for the same provider and
+Client ID, including during upgrade reauthorization. To replace it, enter a new secret;
+to remove it, select the explicit clear option (`clear_client_secret` for API callers).
+Changing provider or Client ID requires a new secret or explicit clearing, so the stored
+secret is never silently forwarded to another client or provider. Disabling SSO clears it.
 
 ## Contributing & Developing
 

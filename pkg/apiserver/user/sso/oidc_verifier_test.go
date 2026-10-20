@@ -106,6 +106,7 @@ func TestHMACOIDCRejectsInvalidIdentityAndKeys(t *testing.T) {
 		p.signingAlgs = []string{"HS256"}
 		p.mu.Unlock()
 		req.Config.ClientSecret = ""
+		req.ClearClientSecret = true
 		_, err := s.saveConfig(req)
 		require.NoError(t, err)
 		_, err = s.NewSessionFromOAuthExchange("http://dashboard/callback", "code", "verifier")

@@ -5561,6 +5561,10 @@
                 "sql_user"
             ],
             "properties": {
+                "clear_client_secret": {
+                    "description": "ClearClientSecret explicitly removes a stored secret instead of preserving a redacted value.",
+                    "type": "boolean"
+                },
                 "config": {
                     "$ref": "#/definitions/config.SSOCoreConfig"
                 },

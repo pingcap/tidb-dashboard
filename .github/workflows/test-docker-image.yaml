@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - master
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true

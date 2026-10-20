@@ -5,11 +5,13 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
@@ -28,13 +30,22 @@ func (kv *configTestKV) Put(_ context.Context, _, value string, _ ...clientv3.Op
 	return &clientv3.PutResponse{}, nil
 }
 
+func (kv *configTestKV) Get(_ context.Context, _ string, _ ...clientv3.OpOption) (*clientv3.GetResponse, error) {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
+	if kv.value == "" {
+		return &clientv3.GetResponse{}, nil
+	}
+	return &clientv3.GetResponse{Kvs: []*mvccpb.KeyValue{{Value: []byte(kv.value)}}}, nil
+}
+
 func TestConcurrentProfilingUpdatePreservesSSORevision(t *testing.T) {
 	kv := &configTestKV{}
 	m := &DynamicConfigManager{
 		lifecycleCtx: context.Background(),
 		etcdClient:   &clientv3.Client{KV: kv},
 		dynamicConfig: &DynamicConfig{
-			KeyVisual: KeyVisualConfig{AutoCollectionDisabled: true},
+			KeyVisual: KeyVisualConfig{AutoCollectionDisabled: true, Policy: DefaultKeyVisualPolicy},
 			SSO:       SSOConfig{Revision: "R0"},
 			Profiling: ProfilingConfig{
 				AutoCollectionTargets:      []model.RequestTargetNode{{IP: "127.0.0.1", Port: 4000}},
@@ -94,4 +105,99 @@ func TestConcurrentProfilingUpdatePreservesSSORevision(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(value), &persisted))
 	require.Equal(t, "R1", persisted.SSO.Revision)
 	require.EqualValues(t, 60, persisted.Profiling.AutoCollectionDurationSecs)
+}
+
+func TestConfigWritesRejectInvalidKeyVisualPolicy(t *testing.T) {
+	for _, method := range []string{"Set", "Modify"} {
+		for _, disabled := range []bool{false, true} {
+			for _, policy := range []string{"", "invalid-policy"} {
+				t.Run(fmt.Sprintf("%s/disabled=%t/policy=%q", method, disabled, policy), func(t *testing.T) {
+					kv := &configTestKV{}
+					m := &DynamicConfigManager{lifecycleCtx: context.Background(), etcdClient: &clientv3.Client{KV: kv}}
+					original := &DynamicConfig{KeyVisual: KeyVisualConfig{Policy: DefaultKeyVisualPolicy}}
+					require.NoError(t, m.Set(original))
+					updates := m.NewPushChannel()
+					<-updates
+					before := kv.value
+					invalid := original.Clone()
+					invalid.KeyVisual = KeyVisualConfig{AutoCollectionDisabled: disabled, Policy: policy}
+					var err error
+					if method == "Set" {
+						err = m.Set(invalid)
+					} else {
+						err = m.Modify(func(dc *DynamicConfig) { dc.KeyVisual = invalid.KeyVisual })
+					}
+					require.Error(t, err)
+					require.Equal(t, before, kv.value, "rejected settings must not reach etcd")
+					current, err := m.Get()
+					require.NoError(t, err)
+					require.Equal(t, original.Clone(), current)
+					select {
+					case <-updates:
+						t.Fatal("rejected settings were published to the service")
+					default:
+					}
+					// Normal configuration changes must still be persisted and published.
+					require.NoError(t, m.Modify(func(dc *DynamicConfig) {
+						dc.KeyVisual = KeyVisualConfig{AutoCollectionDisabled: true, Policy: KeyVisualKVPolicy, PolicyKVSeparator: "/"}
+					}))
+					require.Equal(t, KeyVisualKVPolicy, (<-updates).KeyVisual.Policy)
+				})
+			}
+		}
+	}
+}
+
+func TestStartupRepairsLegacyKeyVisualPolicyBeforePublication(t *testing.T) {
+	for _, tc := range []struct {
+		name              string
+		policy            string
+		disabled, enabled bool
+		wantPolicy        string
+	}{
+		{"disabled invalid policy", "invalid-policy", true, true, DefaultKeyVisualPolicy},
+		{"enabled invalid policy", "invalid-policy", false, true, DefaultKeyVisualPolicy},
+		{"legacy missing policy", "", true, true, DefaultKeyVisualPolicy},
+		{"key visualizer stays disabled", "invalid-policy", true, false, DefaultKeyVisualPolicy},
+		{"existing db policy", KeyVisualDBPolicy, true, true, KeyVisualDBPolicy},
+		{"existing kv policy", KeyVisualKVPolicy, true, true, KeyVisualKVPolicy},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			legacy := &DynamicConfig{
+				KeyVisual: KeyVisualConfig{AutoCollectionDisabled: tc.disabled, Policy: tc.policy, PolicyKVSeparator: "/"},
+				SSO:       SSOConfig{Revision: "unchanged-sso-revision"},
+			}
+			encoded, err := json.Marshal(legacy)
+			require.NoError(t, err)
+			kv := &configTestKV{value: string(encoded)}
+			for restart := 0; restart < 2; restart++ {
+				m := &DynamicConfigManager{
+					config: &Config{EnableKeyVisualizer: tc.enabled}, etcdClient: &clientv3.Client{KV: kv},
+				}
+				updates := m.NewPushChannel()
+				ctx, cancel := context.WithCancel(context.Background())
+				require.NoError(t, m.Start(ctx))
+				var loaded *DynamicConfig
+				select {
+				case loaded = <-updates:
+				case <-time.After(5 * time.Second):
+					cancel()
+					t.Fatal("startup did not publish a repaired config")
+				}
+				cancel()
+				require.NoError(t, m.Stop(context.Background()))
+				require.NoError(t, loaded.Validate())
+				require.Equal(t, tc.wantPolicy, loaded.KeyVisual.Policy)
+				require.Equal(t, !tc.enabled, loaded.KeyVisual.AutoCollectionDisabled)
+				require.Equal(t, "/", loaded.KeyVisual.PolicyKVSeparator)
+				require.Equal(t, "unchanged-sso-revision", loaded.SSO.Revision)
+				kv.mu.Lock()
+				var persisted DynamicConfig
+				err := json.Unmarshal([]byte(kv.value), &persisted)
+				kv.mu.Unlock()
+				require.NoError(t, err)
+				require.Equal(t, loaded, persisted.Clone())
+			}
+		})
+	}
 }

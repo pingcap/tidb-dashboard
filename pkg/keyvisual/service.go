@@ -157,17 +157,17 @@ func (s *Service) newLabelStrategy(
 	wg *sync.WaitGroup,
 	etcdClient *clientv3.Client,
 	tidbClient *tidb.Client,
-) decorator.LabelStrategy {
+) (decorator.LabelStrategy, error) {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, etcdClient, tidbClient)
+		return decorator.TiDBLabelStrategy(lc, wg, etcdClient, tidbClient), nil
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
-		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
+		return decorator.SeparatorLabelStrategy(s.keyVisualCfg), nil
 	default:
-		panic("unreachable")
+		return nil, fmt.Errorf("unsupported key visualizer policy %q", s.keyVisualCfg.Policy)
 	}
 }
 

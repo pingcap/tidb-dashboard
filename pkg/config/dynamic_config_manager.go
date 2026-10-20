@@ -130,6 +130,9 @@ func (m *DynamicConfigManager) Set(newDc *DynamicConfig) error {
 
 // set persists and publishes a config while the caller holds updateMu.
 func (m *DynamicConfigManager) set(newDc *DynamicConfig) error {
+	if err := newDc.Validate(); err != nil {
+		return err
+	}
 	if err := m.store(newDc); err != nil {
 		return err
 	}
@@ -159,10 +162,6 @@ func (m *DynamicConfigManager) Modify(opts ...DynamicConfigOption) error {
 	for _, opt := range opts {
 		opt(newDc)
 	}
-	if err := newDc.Validate(); err != nil {
-		return err
-	}
-
 	return m.set(newDc)
 }
 

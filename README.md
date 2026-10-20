@@ -57,6 +57,15 @@ to remove it, select the explicit clear option (`clear_client_secret` for API ca
 Changing provider or Client ID requires a new secret or explicit clearing, so the stored
 secret is never silently forwarded to another client or provider. Disabling SSO clears it.
 
+## Key Visualizer configuration recovery
+
+Key Visualizer policies must be `db` or `kv`, even while collection is disabled.
+Invalid updates are rejected before persistence. A disable-only API request may omit
+the policy; the current valid policy is preserved. Existing missing or invalid policies
+are repaired to `db` during startup before collection can be enabled. Valid policies and
+key separators are preserved. An unsupported strategy returns a service error instead
+of terminating the Dashboard or embedding PD process.
+
 ## Contributing & Developing
 
 Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)

@@ -85,7 +85,7 @@ function useLocales() {
   tk("fields.backoff_time", "Execution Backoff Time (cop only)")
   tk(
     "fields.backoff_time.desc",
-    "The cumulative backoff waiting time of Coprocessor tasks before retry. It does not include backoff from Point_Get requests or the transaction commit phase (see Commit Backoff Time and Backoff Total). There may be multiple backoffs in parallel so that this may not be a wall time)",
+    "The cumulative backoff waiting time of Coprocessor tasks before retry. It does not include backoff from Point_Get requests or the transaction commit phase (see Commit Backoff Time and Backoff Total). There may be multiple backoffs in parallel so that this may not be a wall time.",
   )
   tk("fields.lock_keys_time", "Lock Keys Time")
   tk(
@@ -105,7 +105,7 @@ function useLocales() {
   tk("fields.resolve_lock_time", "Commit Resolve Lock Time")
   tk(
     "fields.resolve_lock_time.desc",
-    "Time consumed when {{distro.tidb}} resolves locks from other transactions during the transaction commit. It does not include lock resolution on the read path (pessimistic lock keys), whose time is shown in the execution plan of the statement",
+    "Time consumed when {{distro.tidb}} resolves locks from other transactions during the transaction commit. It does not include lock resolution on the read path, whose recorded RPC time is available in the execution plan",
   )
   tk("fields.prewrite_time", "Prewrite Time")
   tk(

@@ -23,9 +23,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Read VERSION file
+      - name: Read build versions
         id: getversion
-        run: echo "::set-output name=version::$(git describe --tags --dirty --always)"
+        run: |
+          echo "version=$(git describe --tags --dirty --always)" >> "$GITHUB_OUTPUT"
+          echo "go_version=$(awk '$1 == "go" { print $2; exit }' go.mod)" >> "$GITHUB_OUTPUT"
 
       - name: Download Dockerfile
         run: |
@@ -37,4 +39,6 @@ jobs:
           context: .
           file: Dockerfile
           platforms: ${{ matrix.platform }}
+          build-args: |
+            GOLANG_VERSION=${{ steps.getversion.outputs.go_version }}
           tags: pingcap/tidb-dashboard:${{ steps.getversion.outputs.version }}

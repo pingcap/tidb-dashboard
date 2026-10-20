@@ -33,6 +33,8 @@ type DynamicConfigOption func(dc *DynamicConfig)
 
 type DynamicConfigManager struct {
 	mu sync.RWMutex
+	// Serialize complete updates, including persistence, across all config writers.
+	updateMu sync.Mutex
 
 	lifecycleCtx context.Context
 	config       *Config
@@ -119,7 +121,15 @@ func (m *DynamicConfigManager) Get() (*DynamicConfig, error) {
 	return m.dynamicConfig.Clone(), nil
 }
 
+// Set serializes persistence and publication of a replacement configuration.
 func (m *DynamicConfigManager) Set(newDc *DynamicConfig) error {
+	m.updateMu.Lock()
+	defer m.updateMu.Unlock()
+	return m.set(newDc)
+}
+
+// set persists and publishes a config while the caller holds updateMu.
+func (m *DynamicConfigManager) set(newDc *DynamicConfig) error {
 	if err := m.store(newDc); err != nil {
 		return err
 	}
@@ -136,7 +146,11 @@ func (m *DynamicConfigManager) Set(newDc *DynamicConfig) error {
 	return nil
 }
 
+// Modify applies options to the latest configuration without losing concurrent updates.
 func (m *DynamicConfigManager) Modify(opts ...DynamicConfigOption) error {
+	m.updateMu.Lock()
+	defer m.updateMu.Unlock()
+
 	newDc, err := m.Get()
 	if err != nil {
 		return err
@@ -149,7 +163,7 @@ func (m *DynamicConfigManager) Modify(opts ...DynamicConfigOption) error {
 		return err
 	}
 
-	return m.Set(newDc)
+	return m.set(newDc)
 }
 
 func (m *DynamicConfigManager) load() (*DynamicConfig, error) {

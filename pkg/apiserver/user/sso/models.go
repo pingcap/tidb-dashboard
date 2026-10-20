@@ -15,7 +15,8 @@ const (
 )
 
 type SSOImpersonationModel struct { // nolint
-	SQLUser string `gorm:"primary_key;size:128" json:"sql_user"`
+	SQLUser        string `gorm:"primary_key;size:128" json:"sql_user"`
+	ConfigRevision string `gorm:"size:36" json:"-"`
 	// The encryption key is placed somewhere else in the FS, to avoid being collected by diagnostics collecting tools.
 	EncryptedPass         string             `gorm:"type:text" json:"-"`
 	LastImpersonateStatus *ImpersonateStatus `gorm:"size:32" json:"last_impersonate_status"`

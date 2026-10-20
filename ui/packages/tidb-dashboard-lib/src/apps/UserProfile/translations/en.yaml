@@ -5,9 +5,14 @@ user_profile:
       label: Enable to use SSO when sign into {{distro.tidb}} Dashboard
       extra: OIDC based SSO is supported
     form:
+      reauthorize: To enable or update SSO, re-enter the impersonated SQL user's password. To disable SSO and clear its authorization, enter the currently signed-in SQL user's password; that account must still have Dashboard write privileges. Saving revokes existing SSO sessions and sharing codes. To change the impersonated SQL user, disable SSO first.
+      upgrade_required: This Dashboard server does not support secure SSO management. Upgrade the server and its bundled UI together to manage SSO settings.
+      reset_user: Currently Signed-in SQL User
+      authorization_status: Last SQL Authorization
       client_id: OIDC Client ID
       client_secret: OIDC Client Secret
-      client_secret_tooltip: Optional, it is needed when using "Client Secret Post" authentication method, and it is only can be seen when setting.
+      client_secret_tooltip: Leave blank to keep the stored secret for the same provider and Client ID. When changing provider or Client ID, enter a new secret or explicitly clear it.
+      clear_client_secret: Clear the stored Client Secret (only if the provider does not require it)
       scopes: Additional OIDC Scopes (space-separated)
       discovery_url: OIDC Discovery URL
       is_read_only: Sign in as read-only privilege

@@ -9,6 +9,7 @@ import (
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -17,11 +18,21 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/user/sso")
 	endpoint.GET("/auth_url", s.getAuthURLHandler)
 	endpoint.Use(auth.MWAuthRequired())
-	// TODO: Forbid modifying config when signed in as SSO.
 	endpoint.GET("/impersonations/list", s.listImpersonationHandler)
-	endpoint.POST("/impersonation", auth.MWRequireWritePriv(), s.createImpersonationHandler)
+	endpoint.POST("/impersonation", requireSQLManagement(), s.createImpersonationHandler)
 	endpoint.GET("/config", s.getConfig)
-	endpoint.PUT("/config", auth.MWRequireWritePriv(), s.setConfig)
+	endpoint.PUT("/config", requireSQLManagement(), s.setConfig)
+}
+
+func requireSQLManagement() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !utils.GetSession(c).CanManageSSO() {
+			rest.Error(c, rest.ErrForbidden.New("Sign in with SQL credentials to manage SSO"))
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }
 
 type GetAuthURLRequest struct {
@@ -106,7 +117,7 @@ func (s *Service) createImpersonationHandler(c *gin.Context) {
 // @Failure 401 {object} rest.ErrorResponse
 // @Failure 500 {object} rest.ErrorResponse
 func (s *Service) getConfig(c *gin.Context) {
-	dc, err := s.params.ConfigManager.Get()
+	dc, err := s.configManager.Get()
 	if err != nil {
 		rest.Error(c, err)
 		return
@@ -117,7 +128,11 @@ func (s *Service) getConfig(c *gin.Context) {
 }
 
 type SetConfigRequest struct {
-	Config config.SSOCoreConfig `json:"config"`
+	Config   config.SSOCoreConfig `json:"config"`
+	SQLUser  string               `json:"sql_user" binding:"required"`
+	Password string               `json:"password"`
+	// ClearClientSecret explicitly removes a stored secret instead of preserving a redacted value.
+	ClearClientSecret bool `json:"clear_client_secret"`
 }
 
 // @ID userSSOSetConfig
@@ -135,32 +150,21 @@ func (s *Service) setConfig(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
-
-	dConfig := config.SSOConfig{CoreConfig: req.Config}
-	if req.Config.Enabled {
-		wellKnownConfig, err := s.discoverOIDC(req.Config.DiscoveryURL)
-		if err != nil {
-			rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
-			return
-		}
-		dConfig.AuthURL = wellKnownConfig.AuthURL
-		dConfig.TokenURL = wellKnownConfig.TokenURL
-		dConfig.UserInfoURL = wellKnownConfig.UserInfoURL
-		dConfig.SignOutURL = wellKnownConfig.EndSessionURL // This is optional
-	} else {
-		err := s.revokeAllImpersonations()
-		if err != nil {
-			rest.Error(c, err)
-			return
-		}
-	}
-
-	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
-		dc.SSO = dConfig
-	}
-	if err := s.params.ConfigManager.Modify(opt); err != nil {
-		rest.Error(c, err)
+	if !req.Config.Enabled && req.SQLUser != utils.GetSession(c).TiDBUsername {
+		rest.Error(c, rest.ErrForbidden.New("Use the currently signed-in SQL account to clear SSO"))
 		return
 	}
+
+	if _, err := s.saveConfig(req); err != nil {
+		rest.Error(c, err)
+		if errorx.IsOfType(err, ErrInvalidImpersonateCredential) {
+			c.Status(http.StatusBadRequest)
+		}
+		return
+	}
+	if !req.Config.Enabled {
+		req.Config = config.SSOCoreConfig{}
+	}
+	req.Config.ClientSecret = ""
 	c.JSON(http.StatusOK, req.Config)
 }

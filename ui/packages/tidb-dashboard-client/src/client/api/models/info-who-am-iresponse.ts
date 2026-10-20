@@ -38,5 +38,6 @@ export interface InfoWhoAmIResponse {
      * @memberof InfoWhoAmIResponse
      */
     'is_writeable'?: boolean;
+    'can_manage_sso'?: boolean;
 }
 

@@ -4754,6 +4754,9 @@
         "info.WhoAmIResponse": {
             "type": "object",
             "properties": {
+                "can_manage_sso": {
+                    "type": "boolean"
+                },
                 "display_name": {
                     "type": "string"
                 },
@@ -5554,9 +5557,22 @@
         },
         "sso.SetConfigRequest": {
             "type": "object",
+            "required": [
+                "sql_user"
+            ],
             "properties": {
+                "clear_client_secret": {
+                    "description": "ClearClientSecret explicitly removes a stored secret instead of preserving a redacted value.",
+                    "type": "boolean"
+                },
                 "config": {
                     "$ref": "#/definitions/config.SSOCoreConfig"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "sql_user": {
+                    "type": "string"
                 }
             }
         },

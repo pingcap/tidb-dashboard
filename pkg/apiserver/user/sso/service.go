@@ -54,13 +54,21 @@ type ServiceParams struct {
 
 type Service struct {
 	params           ServiceParams
+	configManager    dynamicConfigStore
+	verifySQLUser    func(string, string) (bool, error)
 	lifecycleCtx     context.Context
 	oauthStateSecret []byte
 
 	encKeyPath string
 	encKeyLock sync.Mutex
 
-	createImpersonationLock sync.Mutex
+	// Serialize config/credential updates with exchanges to prevent mixed trust contexts.
+	configLock sync.RWMutex
+}
+
+type dynamicConfigStore interface {
+	Get() (*config.DynamicConfig, error)
+	Modify(...config.DynamicConfigOption) error
 }
 
 func NewService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Service, error) {
@@ -68,11 +76,14 @@ func NewService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Servi
 		return nil, err
 	}
 	s := &Service{
-		params:                  p,
-		oauthStateSecret:        cryptopasta.NewHMACKey()[:],
-		encKeyPath:              path.Join(config.DataDir, "dbek.bin"),
-		encKeyLock:              sync.Mutex{},
-		createImpersonationLock: sync.Mutex{},
+		params:        p,
+		configManager: p.ConfigManager,
+		verifySQLUser: func(name, password string) (bool, error) {
+			return user.VerifySQLUser(p.TiDBClient, name, password)
+		},
+		oauthStateSecret: cryptopasta.NewHMACKey()[:],
+		encKeyPath:       path.Join(config.DataDir, "dbek.bin"),
+		encKeyLock:       sync.Mutex{},
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -128,12 +139,15 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 
 // getAndDecryptImpersonation reads the impersonation record from local Sqlite and decrypt the record to get the
 // plain SQL password. Currently this function only reads `root` user impersonation.
-func (s *Service) getAndDecryptImpersonation() (string, string, error) {
+func (s *Service) getAndDecryptImpersonation(revision string) (string, string, error) {
 	var imp SSOImpersonationModel
 	err := s.params.LocalStore.
 		First(&imp).Error
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
+	}
+	if revision == "" || imp.ConfigRevision != revision {
+		return "", "", ErrBadConfig.New("SSO configuration requires SQL reauthorization")
 	}
 	key, err := s.getMasterEncKey()
 	if err != nil {
@@ -163,18 +177,18 @@ func (s *Service) updateImpersonationStatus(user string, status ImpersonateStatu
 
 // newSessionFromImpersonation creates a new session from the impersonation records.
 func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken string) (*utils.SessionUser, error) {
-	dc, err := s.params.ConfigManager.Get()
+	dc, err := s.configManager.Get()
 	if err != nil {
 		return nil, err
 	}
 
-	userName, password, err := s.getAndDecryptImpersonation()
+	userName, password, err := s.getAndDecryptImpersonation(dc.SSO.Revision)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check whether this user can access dashboard
-	writeable, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+	writeable, err := s.verifySQLUser(userName, password)
 	if err != nil {
 		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 			_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
@@ -189,66 +203,16 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
 
 	return &utils.SessionUser{
-		Version:      utils.SessionVersion,
-		HasTiDBAuth:  true,
-		TiDBUsername: userName,
-		TiDBPassword: password,
-		DisplayName:  userInfo.Email,
-		IsShareable:  true,
-		IsWriteable:  writeable && !dc.SSO.CoreConfig.IsReadOnly,
-		OIDCIDToken:  idToken,
+		Version:           utils.SessionVersion,
+		HasTiDBAuth:       true,
+		TiDBUsername:      userName,
+		TiDBPassword:      password,
+		DisplayName:       userInfo.Email,
+		IsShareable:       true,
+		IsWriteable:       writeable && !dc.SSO.CoreConfig.IsReadOnly,
+		OIDCIDToken:       idToken,
+		SSOConfigRevision: dc.SSO.Revision,
 	}, nil
-}
-
-func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
-	{
-		// Check whether this user can access dashboard
-		_, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
-		if err != nil {
-			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
-			}
-			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
-				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
-			}
-			return nil, err
-		}
-	}
-	key, err := s.getOrCreateMasterEncKey()
-	if err != nil {
-		return nil, err
-	}
-	encrypted, err := cryptopasta.Encrypt([]byte(password), key)
-	if err != nil {
-		return nil, err
-	}
-	encryptedInHex := hex.EncodeToString(encrypted)
-
-	record := &SSOImpersonationModel{
-		SQLUser:               userName,
-		EncryptedPass:         encryptedInHex,
-		LastImpersonateStatus: nil,
-	}
-	// currently, we only support to authorize one sql user
-	s.createImpersonationLock.Lock()
-	defer s.createImpersonationLock.Unlock()
-
-	err = s.revokeAllImpersonations()
-	if err != nil {
-		return nil, err
-	}
-	err = s.params.LocalStore.Create(&record).Error
-	if err != nil {
-		return nil, err
-	}
-	return record, nil
-}
-
-func (s *Service) revokeAllImpersonations() error {
-	sqlStr := fmt.Sprintf("DELETE FROM `%s`", SSOImpersonationModel{}.TableName()) // #nosec
-	return s.params.LocalStore.
-		Exec(sqlStr).
-		Error
 }
 
 type oidcWellKnownConfig struct {
@@ -281,6 +245,9 @@ func (s *Service) discoverOIDC(issuer string) (*oidcWellKnownConfig, error) {
 	if err != nil {
 		return nil, ErrDiscoverFailed.Wrap(err, "Failed to discover OIDC endpoints")
 	}
+	if !resp.IsSuccess() {
+		return nil, ErrDiscoverFailed.New("Discovery endpoint returned %d", resp.StatusCode())
+	}
 	wellKnownConfig := resp.Result().(*oidcWellKnownConfig)
 	if strings.TrimSuffix(wellKnownConfig.Issuer, "/") != issuer {
 		return nil, ErrDiscoverFailed.New("Issuer did not match in the OIDC provider, expect %s, got %s", issuer, wellKnownConfig.Issuer)
@@ -310,20 +277,20 @@ func (s *Service) discoverOIDC(issuer string) (*oidcWellKnownConfig, error) {
 }
 
 func (s *Service) IsEnabled() (bool, error) {
-	dc, err := s.params.ConfigManager.Get()
+	dc, err := s.configManager.Get()
 	if err != nil {
 		return false, err
 	}
-	return dc.SSO.CoreConfig.Enabled, nil
+	return dc.SSO.CoreConfig.Enabled && dc.SSO.Revision != "", nil
 }
 
 func (s *Service) buildOAuth2Config(redirectURL string) (*oauth2.Config, error) {
-	dc, err := s.params.ConfigManager.Get()
+	dc, err := s.configManager.Get()
 	if err != nil {
 		return nil, err
 	}
-	if !dc.SSO.CoreConfig.Enabled {
-		return nil, ErrBadConfig.New("SSO is not enabled")
+	if !dc.SSO.CoreConfig.Enabled || dc.SSO.Revision == "" {
+		return nil, ErrBadConfig.New("SSO is disabled or requires SQL reauthorization")
 	}
 	scopes := []string{"openid", "profile", "email"}
 	if len(dc.SSO.CoreConfig.Scopes) > 0 {
@@ -369,34 +336,48 @@ func (s *Service) buildOAuthURL(redirectURL string, state string, codeVerifier s
 	return authURL, nil
 }
 
-func (s *Service) exchangeOAuthCode(redirectURL string, code string, codeVerifier string) (string, string, error) {
+type oAuthExchange struct {
+	AccessToken string
+	IDToken     string
+	Subject     string
+}
+
+func (s *Service) exchangeOAuthCode(redirectURL string, code string, codeVerifier string) (*oAuthExchange, error) {
 	oauthConfig, err := s.buildOAuth2Config(redirectURL)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(s.lifecycleCtx, exchangeTimeout)
 	defer cancel()
 	token, err := oauthConfig.Exchange(ctx, code, oauth2.SetAuthURLParam("code_verifier", codeVerifier))
 	if err != nil {
-		return "", "", ErrOIDCInternalErr.Wrap(err, "oidc: exchange failed")
+		return nil, ErrOIDCInternalErr.Wrap(err, "oidc: exchange failed")
 	}
 
 	idToken, ok := token.Extra("id_token").(string)
-	if !ok {
-		return "", "", ErrOIDCInternalErr.Wrap(err, "oidc: id_token not exist")
+	if !ok || idToken == "" {
+		return nil, ErrOIDCInternalErr.New("oidc: id_token not exist")
 	}
-
-	return token.AccessToken, idToken, nil
+	dc, err := s.configManager.Get()
+	if err != nil {
+		return nil, err
+	}
+	verified, err := verifyIDToken(ctx, dc.SSO, idToken, token.AccessToken)
+	if err != nil {
+		return nil, ErrOIDCInternalErr.Wrap(err, "oidc: invalid ID token")
+	}
+	return &oAuthExchange{AccessToken: token.AccessToken, IDToken: idToken, Subject: verified.Subject}, nil
 }
 
 type oAuthUserInfo struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Subject string `json:"sub"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
 }
 
-func (s *Service) oAuthGetUserInfo(accessToken string) (*oAuthUserInfo, error) {
-	dc, err := s.params.ConfigManager.Get()
+func (s *Service) oAuthGetUserInfo(accessToken, subject string) (*oAuthUserInfo, error) {
+	dc, err := s.configManager.Get()
 	if err != nil {
 		return nil, err
 	}
@@ -414,17 +395,25 @@ func (s *Service) oAuthGetUserInfo(accessToken string) (*oAuthUserInfo, error) {
 	if err != nil {
 		return nil, ErrOIDCInternalErr.Wrap(err, "Failed to read user info")
 	}
+	if !resp.IsSuccess() {
+		return nil, ErrOIDCInternalErr.New("oidc: userinfo endpoint returned %d", resp.StatusCode())
+	}
 	info := resp.Result().(*oAuthUserInfo)
+	if subject == "" || info.Subject != subject {
+		return nil, ErrOIDCInternalErr.New("oidc: userinfo subject does not match ID token")
+	}
 	return info, nil
 }
 
 func (s *Service) NewSessionFromOAuthExchange(redirectURL string, code string, codeVerifier string) (*utils.SessionUser, error) {
-	ak, idToken, err := s.exchangeOAuthCode(redirectURL, code, codeVerifier)
+	s.configLock.RLock()
+	defer s.configLock.RUnlock()
+	tokens, err := s.exchangeOAuthCode(redirectURL, code, codeVerifier)
 	if err != nil {
 		return nil, ErrBadConfig.Wrap(err, "SSO is not configured correctly")
 	}
 
-	info, err := s.oAuthGetUserInfo(ak)
+	info, err := s.oAuthGetUserInfo(tokens.AccessToken, tokens.Subject)
 	if err != nil {
 		// This is likely not a configuration error
 		return nil, err
@@ -432,7 +421,7 @@ func (s *Service) NewSessionFromOAuthExchange(redirectURL string, code string, c
 
 	log.Info("New session via SSO", zap.Any("userinfo", info))
 
-	u, err := s.newSessionFromImpersonation(info, idToken)
+	u, err := s.newSessionFromImpersonation(info, tokens.IDToken)
 	if err != nil {
 		return nil, ErrBadConfig.Wrap(err, "SSO is not configured correctly")
 	}
@@ -440,7 +429,7 @@ func (s *Service) NewSessionFromOAuthExchange(redirectURL string, code string, c
 }
 
 func (s *Service) BuildEndSessionURL(user *utils.SessionUser, redirectURL string) (string, error) {
-	dc, err := s.params.ConfigManager.Get()
+	dc, err := s.configManager.Get()
 	if err != nil {
 		return "", err
 	}

@@ -82,10 +82,10 @@ function useLocales() {
     "fields.process_time.desc",
     "The total time of Coprocessor request being executed in {{distro.tikv}} (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)",
   )
-  tk("fields.backoff_time", "Execution Backoff Time")
+  tk("fields.backoff_time", "Execution Backoff Time (cop only)")
   tk(
     "fields.backoff_time.desc",
-    "The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)",
+    "The cumulative backoff waiting time of Coprocessor tasks before retry. It does not include backoff from Point_Get requests or the transaction commit phase (see Commit Backoff Time and Backoff Total). There may be multiple backoffs in parallel so that this may not be a wall time.",
   )
   tk("fields.lock_keys_time", "Lock Keys Time")
   tk(
@@ -102,10 +102,10 @@ function useLocales() {
     "fields.local_latch_wait_time.desc",
     "Time consumed when {{distro.tidb}} waits for the lock in the current {{distro.tidb}} instance before 2PC commit phase when transaction commits",
   )
-  tk("fields.resolve_lock_time", "Resolve Lock Time")
+  tk("fields.resolve_lock_time", "Commit Resolve Lock Time")
   tk(
     "fields.resolve_lock_time.desc",
-    "Time consumed when {{distro.tidb}} resolves locks from other transactions in 2PC prewrite phase when transaction commits",
+    "Time consumed when {{distro.tidb}} resolves locks from other transactions during the transaction commit. It does not include lock resolution on the read path, whose recorded RPC time is available in the execution plan",
   )
   tk("fields.prewrite_time", "Prewrite Time")
   tk(

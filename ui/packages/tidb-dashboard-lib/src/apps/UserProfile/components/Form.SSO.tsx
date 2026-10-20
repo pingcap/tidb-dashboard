@@ -173,7 +173,7 @@ export function SSOForm() {
           <Input.Password
             disabled={!canManageSSO}
             style={{ width: 320 }}
-            autoComplete="new-password"
+            autoComplete="current-password"
           />
         </Form.Item>
         {isChanged && canManageSSO && (

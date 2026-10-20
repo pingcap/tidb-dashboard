@@ -17,8 +17,8 @@ import (
 
 // IsSessionValid also applies to sessions derived from an SSO sharing code.
 func (s *Service) IsSessionValid(u *utils.SessionUser) bool {
-	s.configLock.RLock()
-	defer s.configLock.RUnlock()
+	// Config snapshots and database reads are synchronized independently. Revision
+	// checks below keep validation safe without waiting for in-flight IdP calls.
 	dc, err := s.configManager.Get()
 	if err != nil || !dc.SSO.CoreConfig.Enabled || u.SSOConfigRevision == "" || u.SSOConfigRevision != dc.SSO.Revision {
 		return false

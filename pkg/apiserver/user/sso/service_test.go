@@ -340,6 +340,50 @@ func TestOIDCRejectsInvalidIdentity(t *testing.T) {
 	}
 }
 
+func TestSessionValidationDoesNotWaitForConfigSave(t *testing.T) {
+	s, _ := newTestService(t)
+	idp := newTestProvider(t)
+	_, err := s.saveConfig(idp.request())
+	require.NoError(t, err)
+	session, err := s.NewSessionFromOAuthExchange("http://dashboard/callback", "code", "verifier")
+	require.NoError(t, err)
+
+	verifying, resume := make(chan struct{}), make(chan struct{})
+	var resumeOnce sync.Once
+	release := func() { resumeOnce.Do(func() { close(resume) }) }
+	defer release()
+	verifySQLUser := s.verifySQLUser
+	s.verifySQLUser = func(name, password string) (bool, error) {
+		close(verifying)
+		<-resume
+		return verifySQLUser(name, password)
+	}
+	writeDone := make(chan error, 1)
+	go func() {
+		_, err := s.saveConfig(idp.request())
+		writeDone <- err
+	}()
+	select {
+	case <-verifying:
+	case <-time.After(5 * time.Second):
+		t.Fatal("configuration save did not reach SQL verification")
+	}
+
+	validated := make(chan bool, 1)
+	go func() { validated <- s.IsSessionValid(session) }()
+	select {
+	case valid := <-validated:
+		require.True(t, valid, "the existing delegation remains valid before the save is published")
+	case <-time.After(time.Second):
+		t.Error("session validation waited for a configuration save's network call")
+		release()
+		<-validated
+	}
+	release()
+	require.NoError(t, <-writeDone)
+	require.False(t, s.IsSessionValid(session), "the completed save must still revoke the old session")
+}
+
 func TestConfigCannotChangeDuringOAuthExchange(t *testing.T) {
 	s, _ := newTestService(t)
 	idp := newTestProvider(t)

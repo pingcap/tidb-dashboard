@@ -1,5 +1,5 @@
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
-import { useCanManageSSO, useIsFeatureSupport } from '@lib/utils/store'
+import { store, useCanManageSSO, useIsFeatureSupport } from '@lib/utils/store'
 import { useChange } from '@lib/utils/useChange'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Alert, Button, Checkbox, Form, Input, Space, Switch } from 'antd'
@@ -29,6 +29,11 @@ export function SSOForm() {
   } = useClientRequest(ctx!.ds.userSSOListImpersonations)
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
   const canManageSSO = useCanManageSSO()
+  const unsupportedBackend = store.useState(
+    (s) => Boolean(s.whoAmI) && typeof s.whoAmI?.can_manage_sso !== 'boolean'
+  )
+  // Management is restricted to direct SQL sessions, whose display name is the SQL username.
+  const currentSQLUser = store.useState((s) => s.whoAmI?.display_name || '')
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
 
   useChange(() => {
@@ -40,11 +45,15 @@ export function SSOForm() {
 
   useChange(() => {
     if (impData) {
-      const update = { sql_user: impData[0]?.sql_user || 'root' }
+      const update = {
+        sql_user: config?.enabled
+          ? impData[0]?.sql_user || 'root'
+          : currentSQLUser
+      }
       form.setFieldsValue(update)
       initialForm.current = { ...initialForm.current, ...update }
     }
-  }, [impData])
+  }, [impData, config, currentSQLUser])
 
   // TODO: Extract common logic
   const handleCancel = useCallback(() => {
@@ -78,13 +87,31 @@ export function SSOForm() {
     >
       <AnimatedSkeleton loading={isLoading || impIsLoading}>
         {(error || impError) && <ErrorBar errors={[error || impError]} />}
+        {unsupportedBackend && (
+          <Alert
+            type="warning"
+            showIcon
+            message={t('user_profile.sso.form.upgrade_required')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
         <Form.Item
           name="enabled"
           label={t('user_profile.sso.switch.label')}
           extra={t('user_profile.sso.switch.extra')}
           valuePropName="checked"
         >
-          <Switch disabled={!canManageSSO} />
+          <Switch
+            disabled={!canManageSSO}
+            onChange={(enabled) =>
+              form.setFieldsValue({
+                sql_user: enabled
+                  ? impData?.[0]?.sql_user || 'root'
+                  : currentSQLUser,
+                password: ''
+              })
+            }
+          />
         </Form.Item>
         <Form.Item noStyle shouldUpdate>
           {(f) =>
@@ -153,18 +180,29 @@ export function SSOForm() {
           message={t('user_profile.sso.form.reauthorize')}
           style={{ marginBottom: 16 }}
         />
-        <Form.Item
-          name="sql_user"
-          label={t('user_profile.sso.form.user.authn_dialog.user')}
-          rules={[{ required: true }]}
-        >
-          <Input
-            disabled={
-              !canManageSSO || !supportNonRootLogin || Boolean(impData?.length)
-            }
-            style={{ width: 320 }}
-            autoComplete="username"
-          />
+        <Form.Item noStyle shouldUpdate>
+          {(f) => (
+            <Form.Item
+              name="sql_user"
+              label={t(
+                f.getFieldValue('enabled')
+                  ? 'user_profile.sso.form.user.authn_dialog.user'
+                  : 'user_profile.sso.form.reset_user'
+              )}
+              rules={[{ required: true }]}
+            >
+              <Input
+                disabled={
+                  !canManageSSO ||
+                  !f.getFieldValue('enabled') ||
+                  !supportNonRootLogin ||
+                  Boolean(impData?.length)
+                }
+                style={{ width: 320 }}
+                autoComplete="username"
+              />
+            </Form.Item>
+          )}
         </Form.Item>
         <Form.Item
           name="password"

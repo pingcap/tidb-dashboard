@@ -32,10 +32,12 @@ it from source (see next section).
 ## SSO configuration and upgrades
 
 Manage SSO while signed in directly with a SQL account that has Dashboard write privileges.
-Every configuration update, including disabling SSO, requires the password of the currently
-impersonated SQL account. To choose another SQL account, disable SSO using the existing
-account's credentials, then enable it with the new account's credentials. Configuration and
-SQL authorization are saved together; existing SSO sessions and their sharing codes are
+Enabling or updating SSO requires the password of the currently impersonated SQL account.
+To disable SSO and clear its configuration and delegation, re-enter the currently signed-in
+SQL account's password; its Dashboard write privileges are checked again. This also allows
+recovery if the old impersonated account has been deleted or lost privileges. To choose
+another SQL account, disable SSO first, then enable it with the new account's credentials.
+Configuration and SQL authorization are saved together; existing SSO sessions and their sharing codes are
 revoked whenever the configuration or authorization changes.
 
 Upgrading from the legacy SSO implementation invalidates existing Dashboard sessions and
@@ -44,6 +46,12 @@ configuration with fresh SQL authorization before using SSO again. Existing SSO 
 are not automatically trusted with the new configuration binding. If configuration persistence
 fails, SSO may remain unavailable until the configuration is successfully saved again; SQL
 login remains available for recovery.
+
+Upgrade the Dashboard backend and bundled UI together. A new UI connected to a legacy
+backend displays an upgrade requirement and does not fall back to insecure SSO management.
+OIDC ID tokens signed with HS256, HS384, or HS512 are verified using the configured client
+secret; asymmetric signatures continue to use the provider's JWKS. Re-enter the client
+secret when saving a configuration that requires it, since the settings API hides it.
 
 ## Contributing & Developing
 

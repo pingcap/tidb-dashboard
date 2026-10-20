@@ -86,6 +86,7 @@ type testProvider struct {
 	mu             sync.Mutex
 	server         *httptest.Server
 	key            *rsa.PrivateKey
+	signingAlgs    []string
 	token          string
 	subject        string
 	userInfoStatus int
@@ -96,10 +97,11 @@ func newTestProvider(t *testing.T) *testProvider {
 	t.Helper()
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
-	p := &testProvider{key: key, subject: "alice", userInfoStatus: http.StatusOK}
+	p := &testProvider{key: key, signingAlgs: []string{"RS256"}, subject: "alice", userInfoStatus: http.StatusOK}
 	p.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p.mu.Lock()
 		token, subject, status, onToken := p.token, p.subject, p.userInfoStatus, p.onToken
+		algorithms := append([]string(nil), p.signingAlgs...)
 		p.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
@@ -108,7 +110,7 @@ func newTestProvider(t *testing.T) *testProvider {
 				Issuer: p.server.URL, AuthURL: p.server.URL + "/auth", TokenURL: p.server.URL + "/token",
 				UserInfoURL: p.server.URL + "/userinfo", JWKSURI: p.server.URL + "/keys",
 				ResponseTypesSupported: []string{"code"}, SubjectTypesSupported: []string{"public"},
-				IDTokenSigningAlgValuesSupported: []string{"RS256"},
+				IDTokenSigningAlgValuesSupported: algorithms,
 			})
 		case "/token":
 			if onToken != nil {
@@ -257,10 +259,17 @@ func TestDisableSSORequiresReauthorization(t *testing.T) {
 	require.Error(t, err, "the legacy endpoint cannot preauthorize a future arbitrary config")
 }
 
-type testManagementAuthenticator struct{ user.BaseAuthenticator }
+type testManagementAuthenticator struct {
+	user.BaseAuthenticator
+	sqlUser string
+}
 
 func (a *testManagementAuthenticator) Authenticate(user.AuthenticateForm) (*utils.SessionUser, error) {
-	return &utils.SessionUser{Version: utils.SessionVersion, HasTiDBAuth: true, IsWriteable: true, TiDBUsername: "root"}, nil
+	name := a.sqlUser
+	if name == "" {
+		name = "root"
+	}
+	return &utils.SessionUser{Version: utils.SessionVersion, HasTiDBAuth: true, IsWriteable: true, TiDBUsername: name}, nil
 }
 
 func TestRegisteredManagementRoutesRejectSSOAndSharedJWTs(t *testing.T) {

@@ -55,17 +55,26 @@ func (s *Service) saveConfigLocked(req SetConfigRequest) (*SSOImpersonationModel
 		return nil, rest.ErrBadRequest.New("SQL credentials are required")
 	}
 	// Knowledge of a less privileged SQL password must not authorize reuse or replacement
-	// of an existing privileged delegation. Disable it with its own credentials first.
+	// of an existing privileged delegation. Disabling only destroys the delegation,
+	// so a freshly verified SQL writer may clear it without the old account.
 	var previous SSOImpersonationModel
 	err := s.params.LocalStore.First(&previous).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if err == nil && previous.SQLUser != req.SQLUser {
+	if req.Config.Enabled && err == nil && previous.SQLUser != req.SQLUser {
 		return nil, rest.ErrForbidden.New("Reauthorize using the currently impersonated SQL user")
 	}
-	if _, err := s.verifySQLUser(req.SQLUser, req.Password); err != nil {
+	writeable, err := s.verifySQLUser(req.SQLUser, req.Password)
+	if err != nil {
 		return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential or insufficient privileges")
+	}
+	if !req.Config.Enabled {
+		if !writeable {
+			return nil, rest.ErrForbidden.New("Dashboard write privileges are required to clear SSO")
+		}
+		// Do not retain any part of the old trust configuration or its client secret.
+		req.Config = config.SSOCoreConfig{}
 	}
 
 	dConfig := config.SSOConfig{CoreConfig: req.Config, Revision: uuid.NewString()}

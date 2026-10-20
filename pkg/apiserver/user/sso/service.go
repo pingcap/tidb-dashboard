@@ -15,7 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-resty/resty/v2"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
@@ -364,20 +363,9 @@ func (s *Service) exchangeOAuthCode(redirectURL string, code string, codeVerifie
 	if err != nil {
 		return nil, err
 	}
-	verifier := oidc.NewVerifier(dc.SSO.Issuer, oidc.NewRemoteKeySet(ctx, dc.SSO.JWKSURL), &oidc.Config{
-		ClientID: dc.SSO.CoreConfig.ClientID, SupportedSigningAlgs: dc.SSO.SigningAlgs,
-	})
-	verified, err := verifier.Verify(ctx, idToken)
+	verified, err := verifyIDToken(ctx, dc.SSO, idToken, token.AccessToken)
 	if err != nil {
 		return nil, ErrOIDCInternalErr.Wrap(err, "oidc: invalid ID token")
-	}
-	if verified.Subject == "" {
-		return nil, ErrOIDCInternalErr.New("oidc: missing subject")
-	}
-	if verified.AccessTokenHash != "" {
-		if err := verified.VerifyAccessToken(token.AccessToken); err != nil {
-			return nil, ErrOIDCInternalErr.Wrap(err, "oidc: invalid access token")
-		}
 	}
 	return &oAuthExchange{AccessToken: token.AccessToken, IDToken: idToken, Subject: verified.Subject}, nil
 }

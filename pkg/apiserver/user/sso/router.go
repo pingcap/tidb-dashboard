@@ -148,6 +148,10 @@ func (s *Service) setConfig(c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
 		return
 	}
+	if !req.Config.Enabled && req.SQLUser != utils.GetSession(c).TiDBUsername {
+		rest.Error(c, rest.ErrForbidden.New("Use the currently signed-in SQL account to clear SSO"))
+		return
+	}
 
 	if _, err := s.saveConfig(req); err != nil {
 		rest.Error(c, err)
@@ -155,6 +159,9 @@ func (s *Service) setConfig(c *gin.Context) {
 			c.Status(http.StatusBadRequest)
 		}
 		return
+	}
+	if !req.Config.Enabled {
+		req.Config = config.SSOCoreConfig{}
 	}
 	req.Config.ClientSecret = ""
 	c.JSON(http.StatusOK, req.Config)

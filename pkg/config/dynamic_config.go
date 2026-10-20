@@ -54,6 +54,11 @@ type SSOCoreConfig struct {
 }
 
 type SSOConfig struct {
+	// Revision binds both impersonation credentials and sessions to this config.
+	Revision    string        `json:"revision"`
+	Issuer      string        `json:"issuer"`
+	JWKSURL     string        `json:"jwks_url"`
+	SigningAlgs []string      `json:"signing_algs"`
 	CoreConfig  SSOCoreConfig `json:"core_config"`
 	AuthURL     string        `json:"auth_url"`
 	TokenURL    string        `json:"token_url"`
@@ -69,6 +74,7 @@ type DynamicConfig struct {
 
 func (c *DynamicConfig) Clone() *DynamicConfig {
 	newCfg := *c
+	newCfg.SSO.SigningAlgs = append([]string(nil), c.SSO.SigningAlgs...)
 	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
 	copy(newCfg.Profiling.AutoCollectionTargets, c.Profiling.AutoCollectionTargets)
 	return &newCfg

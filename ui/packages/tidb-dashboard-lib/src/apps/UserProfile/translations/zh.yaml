@@ -5,6 +5,7 @@ user_profile:
       label: 允许使用 SSO 登录到 {{distro.tidb}} Dashboard
       extra: 支持基于 OIDC 的 SSO 登录
     form:
+      reauthorize: 请使用 SQL 账户登录，并重新输入当前被模拟 SQL 用户的密码以保存 SSO 配置（包括禁用 SSO）。保存后，原有 SSO 会话及其分享授权码将失效。若要更换 SQL 用户，请先禁用 SSO。
       client_id: OIDC Client ID
       client_secret: OIDC Client Secret
       client_secret_tooltip: 可选，使用 "Client Secret Post" 认证方法时需要，且仅在设置时可见。

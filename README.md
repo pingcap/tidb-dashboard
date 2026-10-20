@@ -29,6 +29,22 @@ TiDB Dashboard.
 Note: The TiDB Dashboard inside PD may be not up to date. To play with latest TiDB Dashboard, build
 it from source (see next section).
 
+## SSO configuration and upgrades
+
+Manage SSO while signed in directly with a SQL account that has Dashboard write privileges.
+Every configuration update, including disabling SSO, requires the password of the currently
+impersonated SQL account. To choose another SQL account, disable SSO using the existing
+account's credentials, then enable it with the new account's credentials. Configuration and
+SQL authorization are saved together; existing SSO sessions and their sharing codes are
+revoked whenever the configuration or authorization changes.
+
+Upgrading from the legacy SSO implementation invalidates existing Dashboard sessions and
+sharing codes, including SQL sessions. Sign in again using SQL credentials and save the SSO
+configuration with fresh SQL authorization before using SSO again. Existing SSO credentials
+are not automatically trusted with the new configuration binding. If configuration persistence
+fails, SSO may remain unavailable until the configuration is successfully saved again; SQL
+login remains available for recovery.
+
 ## Contributing & Developing
 
 Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)

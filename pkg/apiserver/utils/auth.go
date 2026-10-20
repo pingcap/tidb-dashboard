@@ -10,12 +10,19 @@ import (
 
 type AuthType int
 
-const SessionVersion = 2
+const (
+	AuthTypeSQL AuthType = iota
+	AuthTypeCode
+	AuthTypeSSO
+)
+
+// Invalidate legacy sessions and sharing codes that do not track SSO provenance.
+const SessionVersion = 3
 
 // The content of this structure will be encrypted and stored as both Session Token and Sharing Token.
 // For fields that don't need to be cloned during session sharing, mark fields as `msgpack:"-"`.
 type SessionUser struct {
-	// Must be 2. This field is used to invalidate outdated sessions after schema change.
+	// This field is used to invalidate outdated sessions after schema change.
 	Version int
 
 	DisplayName string
@@ -29,6 +36,8 @@ type SessionUser struct {
 
 	// This field only exists for SSOAuth
 	OIDCIDToken string `json:",omitempty"`
+	// Also preserved in sharing codes so config changes revoke derived sessions.
+	SSOConfigRevision string `json:",omitempty"`
 
 	// These fields should not be updated by individual authenticators.
 	AuthFrom AuthType `msgpack:"-" json:",omitempty"`
@@ -36,6 +45,10 @@ type SessionUser struct {
 	// TODO: Make them table fields
 	IsShareable bool
 	IsWriteable bool
+}
+
+func (u *SessionUser) CanManageSSO() bool {
+	return u != nil && u.HasTiDBAuth && u.IsWriteable && u.AuthFrom == AuthTypeSQL && u.SSOConfigRevision == ""
 }
 
 const (

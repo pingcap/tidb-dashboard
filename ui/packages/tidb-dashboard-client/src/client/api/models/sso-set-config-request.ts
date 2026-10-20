@@ -27,5 +27,8 @@ export interface SsoSetConfigRequest {
      * @memberof SsoSetConfigRequest
      */
     'config'?: ConfigSSOCoreConfig;
+    /** SQL credentials must be supplied again for every SSO configuration change. */
+    'sql_user': string;
+    'password'?: string;
 }
 

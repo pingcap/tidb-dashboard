@@ -5,6 +5,7 @@ user_profile:
       label: Enable to use SSO when sign into {{distro.tidb}} Dashboard
       extra: OIDC based SSO is supported
     form:
+      reauthorize: Sign in with SQL credentials and re-enter the currently impersonated SQL user password to save any SSO changes, including disabling SSO. Saving revokes existing SSO sessions and their sharing codes. To change the SQL user, disable SSO first.
       client_id: OIDC Client ID
       client_secret: OIDC Client Secret
       client_secret_tooltip: Optional, it is needed when using "Client Secret Post" authentication method, and it is only can be seen when setting.

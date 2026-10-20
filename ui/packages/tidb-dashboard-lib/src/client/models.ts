@@ -1355,6 +1355,7 @@ export interface InfoWhoAmIResponse {
      * @memberof InfoWhoAmIResponse
      */
     'is_writeable'?: boolean;
+    'can_manage_sso'?: boolean;
 }
 
 
@@ -2732,6 +2733,9 @@ export interface SsoSetConfigRequest {
      * @memberof SsoSetConfigRequest
      */
     'config'?: ConfigSSOCoreConfig;
+    /** SQL credentials must be supplied again for every SSO configuration change. */
+    'sql_user': string;
+    'password'?: string;
 }
 
 

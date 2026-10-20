@@ -8,6 +8,7 @@ user_profile:
       reauthorize: 启用或修改 SSO 时，请重新输入被模拟 SQL 用户的密码。禁用 SSO 并清除授权时，请输入当前登录 SQL 用户的密码，该账户仍须拥有 Dashboard 写权限。保存后，原有 SSO 会话及分享授权码将失效。若要更换被模拟的 SQL 用户，请先禁用 SSO。
       upgrade_required: 当前 Dashboard 服务端不支持安全的 SSO 配置管理，请同步升级服务端及其配套前端后再管理 SSO 设置。
       reset_user: 当前登录的 SQL 用户
+      authorization_status: 最近一次 SQL 授权
       client_id: OIDC Client ID
       client_secret: OIDC Client Secret
       client_secret_tooltip: 留空以保留同一身份提供方和 Client ID 的现有密钥；更换身份提供方或 Client ID 时，请重新填写密钥或明确选择清除。

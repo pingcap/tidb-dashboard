@@ -1,8 +1,18 @@
+import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
 import { store, useCanManageSSO, useIsFeatureSupport } from '@lib/utils/store'
 import { useChange } from '@lib/utils/useChange'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { Alert, Button, Checkbox, Form, Input, Space, Switch } from 'antd'
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Space,
+  Switch,
+  Typography
+} from 'antd'
 import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UserProfileContext } from '../context'
@@ -35,6 +45,13 @@ export function SSOForm() {
   // Management is restricted to direct SQL sessions, whose display name is the SQL username.
   const currentSQLUser = store.useState((s) => s.whoAmI?.display_name || '')
   const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
+  const impersonation = impData?.[0]
+  const authorizationError =
+    impersonation?.last_impersonate_status === 'auth_fail'
+      ? 'auth_failed'
+      : impersonation?.last_impersonate_status === 'insufficient_privileges'
+      ? 'insufficient_privileges'
+      : undefined
 
   useChange(() => {
     if (config) {
@@ -204,6 +221,28 @@ export function SSOForm() {
             )
           }
         </Form.Item>
+        {impersonation && (
+          <Form.Item
+            label={t('user_profile.sso.form.authorization_status')}
+            extra={t('user_profile.sso.form.user.extra')}
+          >
+            <Space>
+              <span>{impersonation.sql_user}</span>
+              <Typography.Text type={authorizationError ? 'danger' : 'success'}>
+                {authorizationError ? (
+                  <CloseCircleFilled />
+                ) : (
+                  <CheckCircleFilled />
+                )}{' '}
+                {t(
+                  `user_profile.sso.form.user.authn_status.${
+                    authorizationError || 'ok'
+                  }`
+                )}
+              </Typography.Text>
+            </Space>
+          </Form.Item>
+        )}
         <Alert
           type="info"
           showIcon

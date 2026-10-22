@@ -3163,6 +3163,12 @@ export interface StatementModel {
      */
     'first_seen'?: number;
     /**
+     *
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'ia_exec_count'?: number;
+    /**
      * 
      * @type {string}
      * @memberof StatementModel

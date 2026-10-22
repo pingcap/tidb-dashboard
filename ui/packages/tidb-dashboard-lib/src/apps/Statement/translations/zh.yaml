@@ -104,6 +104,8 @@ statement:
     sum_latency_tooltip: 该类 SQL 语句在时间段内的累计执行时间
     exec_count: 执行次数
     exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
+    ia_exec_count: IA 执行次数
+    ia_exec_count_tooltip: 该类 SQL 语句在时间段内的 IA 执行总次数
     plan_count: 计划数
     plan_count_tooltip: 该类 SQL 语句在时间段内的不同执行计划数量
     plan_cache_hits: 计划缓存命中次数

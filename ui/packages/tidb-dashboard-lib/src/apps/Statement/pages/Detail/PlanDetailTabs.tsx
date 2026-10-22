@@ -34,7 +34,7 @@ export default function DetailTabs({
       key: 'basic',
       title: t('statement.pages.detail.tabs.basic'),
       content: () => {
-        const items = tabBasicItems(data)
+        const items = tabBasicItems(data, columnsSet.has('ia_exec_count'))
         const columns = valueColumns('statement.fields.')
         return (
           <CardTable

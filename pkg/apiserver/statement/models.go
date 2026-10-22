@@ -19,6 +19,7 @@ type Model struct {
 	AggDigestText            string  `json:"digest_text" agg:"ANY_VALUE(digest_text)"`
 	AggDigest                string  `json:"digest" agg:"ANY_VALUE(digest)"`
 	AggExecCount             int     `json:"exec_count" agg:"SUM(exec_count)"`
+	AggIaExecCount           int     `json:"ia_exec_count" agg:"SUM(ia_exec_count)"`
 	AggStmtType              string  `json:"stmt_type" agg:"ANY_VALUE(stmt_type)"`
 	AggSumErrors             int     `json:"sum_errors" agg:"SUM(sum_errors)"`
 	AggSumWarnings           int     `json:"sum_warnings" agg:"SUM(sum_warnings)"`

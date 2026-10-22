@@ -106,6 +106,8 @@ statement:
     sum_latency_tooltip: Total execution time for this kind of statement
     exec_count: '# Exec'
     exec_count_tooltip: Total execution count for this kind of statement
+    ia_exec_count: IA Execs
+    ia_exec_count_tooltip: Total IA execution count for this kind of statement
     plan_count: '# Plans'
     plan_count_tooltip: Number of distinct execution plans of this statement in current time range
     plan_cache_hits: '# Plan Cache Hits'

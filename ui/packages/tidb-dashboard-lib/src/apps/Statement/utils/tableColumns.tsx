@@ -201,6 +201,7 @@ export function statementColumns(
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
+    tcf.bar.single('ia_exec_count', 'short', rows),
     tcf.textWithTooltip('plan_count', rows).patchConfig({
       minWidth: 100,
       maxWidth: 300,

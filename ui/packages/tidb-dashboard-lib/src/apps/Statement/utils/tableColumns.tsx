@@ -330,7 +330,10 @@ export function statementColumns(
   ])
 }
 
-export function planColumns(rows: StatementModel[]): IColumn[] {
+export function planColumns(
+  rows: StatementModel[],
+  showIaExecCount: boolean
+): IColumn[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return tcf.columns([
@@ -341,6 +344,9 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
+    ...(showIaExecCount
+      ? [tcf.bar.single('ia_exec_count', 'short', rows)]
+      : []),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows)
   ])
 }

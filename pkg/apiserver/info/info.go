@@ -112,9 +112,10 @@ func (s *Service) infoHandler(c *gin.Context) {
 }
 
 type WhoAmIResponse struct {
-	DisplayName string `json:"display_name"`
-	IsShareable bool   `json:"is_shareable"`
-	IsWriteable bool   `json:"is_writeable"`
+	DisplayName  string `json:"display_name"`
+	IsShareable  bool   `json:"is_shareable"`
+	IsWriteable  bool   `json:"is_writeable"`
+	CanManageSSO bool   `json:"can_manage_sso"`
 }
 
 // @ID infoWhoami
@@ -126,9 +127,10 @@ type WhoAmIResponse struct {
 func (s *Service) WhoamiHandler(c *gin.Context) {
 	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
-		DisplayName: sessionUser.DisplayName,
-		IsShareable: sessionUser.IsShareable,
-		IsWriteable: sessionUser.IsWriteable,
+		DisplayName:  sessionUser.DisplayName,
+		IsShareable:  sessionUser.IsShareable,
+		IsWriteable:  sessionUser.IsWriteable,
+		CanManageSSO: sessionUser.CanManageSSO(),
 	}
 	c.JSON(http.StatusOK, resp)
 }

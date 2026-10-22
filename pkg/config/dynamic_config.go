@@ -54,6 +54,11 @@ type SSOCoreConfig struct {
 }
 
 type SSOConfig struct {
+	// Revision binds both impersonation credentials and sessions to this config.
+	Revision    string        `json:"revision"`
+	Issuer      string        `json:"issuer"`
+	JWKSURL     string        `json:"jwks_url"`
+	SigningAlgs []string      `json:"signing_algs"`
 	CoreConfig  SSOCoreConfig `json:"core_config"`
 	AuthURL     string        `json:"auth_url"`
 	TokenURL    string        `json:"token_url"`
@@ -69,16 +74,15 @@ type DynamicConfig struct {
 
 func (c *DynamicConfig) Clone() *DynamicConfig {
 	newCfg := *c
+	newCfg.SSO.SigningAlgs = append([]string(nil), c.SSO.SigningAlgs...)
 	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
 	copy(newCfg.Profiling.AutoCollectionTargets, c.Profiling.AutoCollectionTargets)
 	return &newCfg
 }
 
 func (c *DynamicConfig) Validate() error {
-	if !c.KeyVisual.AutoCollectionDisabled {
-		if err := c.KeyVisual.validatePolicy(); err != nil {
-			return err
-		}
+	if err := c.KeyVisual.validatePolicy(); err != nil {
+		return err
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {
@@ -110,10 +114,8 @@ func (c *DynamicConfig) Validate() error {
 
 // Adjust is used to fill the default config for the existing config of the old version.
 func (c *DynamicConfig) Adjust() {
-	if !c.KeyVisual.AutoCollectionDisabled {
-		if err := c.KeyVisual.validatePolicy(); err != nil {
-			c.KeyVisual.Policy = DefaultKeyVisualPolicy
-		}
+	if err := c.KeyVisual.validatePolicy(); err != nil {
+		c.KeyVisual.Policy = DefaultKeyVisualPolicy
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {

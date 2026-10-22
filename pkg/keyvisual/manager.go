@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -114,9 +115,19 @@ func (s *Service) setDynamicConfig(c *gin.Context) {
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
+		// Keep disable-only clients working without persisting an empty policy.
+		if req.AutoCollectionDisabled && req.Policy == "" {
+			req.Policy = dc.KeyVisual.Policy
+			if req.PolicyKVSeparator == "" {
+				req.PolicyKVSeparator = dc.KeyVisual.PolicyKVSeparator
+			}
+		}
 		dc.KeyVisual = req
 	}
 	if err := s.cfgManager.Modify(opt); err != nil {
+		if errorx.IsOfType(err, config.ErrVerificationFailed) {
+			err = rest.ErrBadRequest.WrapWithNoMessage(err)
+		}
 		rest.Error(c, err)
 		return
 	}

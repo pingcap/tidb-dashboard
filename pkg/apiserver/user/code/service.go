@@ -67,7 +67,7 @@ func (s *Service) NewSessionFromSharingCode(codeInHex string) *utils.SessionUser
 		return nil
 	}
 
-	if time.Now().After(shared.ExpireAt) {
+	if shared.Session == nil || shared.Session.Version != utils.SessionVersion || time.Now().After(shared.ExpireAt) {
 		return nil
 	}
 

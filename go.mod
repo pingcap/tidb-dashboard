@@ -13,9 +13,11 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/cenkalti/backoff/v4 v4.2.1
+	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.11.0
+	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/goccy/go-graphviz v0.0.9
@@ -52,7 +54,7 @@ require (
 	go.uber.org/fx v1.12.0
 	go.uber.org/goleak v1.1.10
 	go.uber.org/zap v1.19.0
-	golang.org/x/oauth2 v0.30.0
+	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.18.0
 	google.golang.org/grpc v1.75.1
 	google.golang.org/protobuf v1.36.10

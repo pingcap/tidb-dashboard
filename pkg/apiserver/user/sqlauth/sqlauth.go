@@ -11,7 +11,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
 
-const typeID utils.AuthType = 0
+const typeID = utils.AuthTypeSQL
 
 type Authenticator struct {
 	user.BaseAuthenticator

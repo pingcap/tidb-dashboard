@@ -29,6 +29,43 @@ TiDB Dashboard.
 Note: The TiDB Dashboard inside PD may be not up to date. To play with latest TiDB Dashboard, build
 it from source (see next section).
 
+## SSO configuration and upgrades
+
+Manage SSO while signed in directly with a SQL account that has Dashboard write privileges.
+Enabling or updating SSO requires the password of the currently impersonated SQL account.
+To disable SSO and clear its configuration and delegation, re-enter the currently signed-in
+SQL account's password; its Dashboard write privileges are checked again. This also allows
+recovery if the old impersonated account has been deleted or lost privileges. To choose
+another SQL account, disable SSO first, then enable it with the new account's credentials.
+Configuration and SQL authorization are saved together; existing SSO sessions and their sharing codes are
+revoked whenever the configuration or authorization changes.
+
+Upgrading from the legacy SSO implementation invalidates existing Dashboard sessions and
+sharing codes, including SQL sessions. Sign in again using SQL credentials and save the SSO
+configuration with fresh SQL authorization before using SSO again. Existing SSO credentials
+are not automatically trusted with the new configuration binding. If configuration persistence
+fails, SSO may remain unavailable until the configuration is successfully saved again; SQL
+login remains available for recovery.
+
+Upgrade the Dashboard backend and bundled UI together. A new UI connected to a legacy
+backend displays an upgrade requirement and does not fall back to insecure SSO management.
+OIDC ID tokens signed with HS256, HS384, or HS512 are verified using the configured client
+secret; asymmetric signatures continue to use the provider's JWKS. The settings API hides
+the client secret. Leaving it blank preserves the stored secret for the same provider and
+Client ID, including during upgrade reauthorization. To replace it, enter a new secret;
+to remove it, select the explicit clear option (`clear_client_secret` for API callers).
+Changing provider or Client ID requires a new secret or explicit clearing, so the stored
+secret is never silently forwarded to another client or provider. Disabling SSO clears it.
+
+## Key Visualizer configuration recovery
+
+Key Visualizer policies must be `db` or `kv`, even while collection is disabled.
+Invalid updates are rejected before persistence. A disable-only API request may omit
+the policy; the current valid policy is preserved. Existing missing or invalid policies
+are repaired to `db` during startup before collection can be enabled. Valid policies and
+key separators are preserved. An unsupported strategy returns a service error instead
+of terminating the Dashboard or embedding PD process.
+
 ## Contributing & Developing
 
 Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)

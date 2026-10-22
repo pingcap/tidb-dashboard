@@ -5793,6 +5793,9 @@
                 "first_seen": {
                     "type": "integer"
                 },
+                "ia_exec_count": {
+                    "type": "integer"
+                },
                 "index_names": {
                     "type": "string"
                 },

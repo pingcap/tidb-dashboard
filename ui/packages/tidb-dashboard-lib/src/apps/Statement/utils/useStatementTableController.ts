@@ -24,6 +24,7 @@ export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   sum_latency: true,
   avg_latency: true,
   exec_count: true,
+  ia_exec_count: true,
   plan_count: true
 }
 

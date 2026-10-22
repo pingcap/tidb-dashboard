@@ -33,13 +33,15 @@ func TestIaExecCountAvailability(t *testing.T) {
 				t.Fatalf("ia_exec_count availability = %v, want %v", found, tc.available)
 			}
 
-			query, err := (&Service{}).genSelectStmt(tc.columns, []string{"exec_count", "ia_exec_count"})
-			if err != nil {
-				t.Fatal(err)
-			}
-			selected := strings.Contains(query, "SUM(ia_exec_count) AS agg_ia_exec_count")
-			if selected != tc.available {
-				t.Fatalf("ia_exec_count selected = %v, want %v; query: %s", selected, tc.available, query)
+			for _, requested := range [][]string{{"exec_count", "ia_exec_count"}, {"*"}} {
+				query, err := (&Service{}).genSelectStmt(tc.columns, requested)
+				if err != nil {
+					t.Fatal(err)
+				}
+				selected := strings.Contains(query, "SUM(ia_exec_count) AS agg_ia_exec_count")
+				if selected != tc.available {
+					t.Fatalf("ia_exec_count selected = %v, want %v; requested: %v; query: %s", selected, tc.available, requested, query)
+				}
 			}
 		})
 	}

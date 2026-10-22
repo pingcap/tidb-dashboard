@@ -26,6 +26,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
+import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import PlanDetail from './PlanDetail'
 import PlanBind from './PlanBind'
 import { StatementContext } from '../../context'
@@ -72,8 +73,17 @@ function DetailPage() {
     )
   )
 
+  const { schemaColumns } = useSchemaColumns(
+    ctx!.ds.statementsAvailableFieldsGet
+  )
+  const showIaExecCount =
+    schemaColumns.includes('ia_exec_count') &&
+    !!plans?.some((plan) => typeof plan.ia_exec_count === 'number')
   const { t } = useTranslation()
-  const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
+  const planColumns = useMemo(
+    () => genPlanColumns(plans || [], showIaExecCount),
+    [plans, showIaExecCount]
+  )
 
   const [selectedPlans, setSelectedPlans] = useState<string[]>([])
   const selection = useRef(
@@ -117,7 +127,11 @@ function DetailPage() {
           supportPlanBinding &&
           plans &&
           plans.length > 0 ? (
-            <PlanBind query={query} plans={plans!} />
+            <PlanBind
+              query={query}
+              plans={plans!}
+              showIaExecCount={showIaExecCount}
+            />
           ) : null
         }
       >

@@ -46,7 +46,7 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
         key: 'basic',
         title: t('slow_query.detail.tabs.basic'),
         content: () => {
-          const items = tabBasicItems(data)
+          const items = tabBasicItems(data, t)
           const columns = valueColumns('slow_query.fields.')
           return (
             <CardTable

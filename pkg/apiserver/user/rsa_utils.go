@@ -81,6 +81,7 @@ func DumpPrivateKeyBase64(privatekey *rsa.PrivateKey) (string, error) {
 
 // Encrypt by public key.
 func Encrypt(plainText string, publicKey *rsa.PublicKey) (string, error) {
+	//nolint:staticcheck // PKCS#1 v1.5 is required for compatibility with JSEncrypt password payloads.
 	encryptedText, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, []byte(plainText))
 	if err != nil {
 		return "", err
@@ -99,6 +100,7 @@ func Decrypt(cipherText string, privateKey *rsa.PrivateKey) (string, error) {
 		return "", err
 	}
 
+	//nolint:staticcheck // PKCS#1 v1.5 is required for compatibility with JSEncrypt password payloads.
 	decryptedText, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, decodedText)
 	if err != nil {
 		return "", err

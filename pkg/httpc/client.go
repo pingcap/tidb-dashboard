@@ -38,9 +38,9 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	cli := http.Client{
 		Transport: &http.Transport{
 			ForceAttemptHTTP2: true,
-			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, tlsConfig)
-				return conn, err
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dialer := tls.Dialer{Config: tlsConfig}
+				return dialer.DialContext(ctx, network, addr)
 			},
 			TLSClientConfig: tlsConfig,
 		},

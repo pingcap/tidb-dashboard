@@ -241,6 +241,9 @@ func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
 		return nil, err
 	}
 	u.AuthFrom = f.Type
+	if u.Version != utils.SessionVersion || !a.ProcessSession(u) {
+		return nil, rest.ErrUnauthenticated.NewWithNoMessage()
+	}
 	return u, nil
 }
 

@@ -19,9 +19,10 @@ import { Selection } from 'office-ui-fabric-react/lib/Selection'
 interface PlanBindProps {
   query: IPageQuery
   plans: StatementModel[]
+  showIaExecCount: boolean
 }
 
-const PlanBind = ({ query, plans }: PlanBindProps) => {
+const PlanBind = ({ query, plans, showIaExecCount }: PlanBindProps) => {
   const ctx = useContext(StatementContext)
   const { t } = useTranslation()
   const { data: planBindingStatus } = useClientRequest((reqConfig) =>
@@ -79,6 +80,7 @@ const PlanBind = ({ query, plans }: PlanBindProps) => {
         showPlanBindModal={showPlanBindModal}
         boundPlanDigest={boundPlanDigest}
         plans={plans}
+        showIaExecCount={showIaExecCount}
         sqlDigest={query.digest!}
         onHandleModalVisibility={setShowPlanBindModal}
         onHandleSetBoundPlanDigets={setBoundPlanDigest}
@@ -91,6 +93,7 @@ interface PlanBindModalProps {
   showPlanBindModal: boolean
   boundPlanDigest: string | null
   plans: StatementModel[]
+  showIaExecCount: boolean
   sqlDigest: string
   onHandleModalVisibility: (visibility: boolean) => void
   onHandleSetBoundPlanDigets: (planDigest: string | null) => void
@@ -100,6 +103,7 @@ const PlanBindModal = ({
   showPlanBindModal,
   boundPlanDigest,
   plans,
+  showIaExecCount,
   sqlDigest,
   onHandleModalVisibility,
   onHandleSetBoundPlanDigets
@@ -202,6 +206,7 @@ const PlanBindModal = ({
       {!isLoading && (
         <PlanTable
           plans={plans}
+          showIaExecCount={showIaExecCount}
           boundPlanDigest={boundPlanDigest}
           onHandleSelectedPlanChange={handleSelectedPlanChange}
         />
@@ -213,15 +218,20 @@ const PlanBindModal = ({
 interface PlanTableProps {
   boundPlanDigest: string | null
   plans: StatementModel[]
+  showIaExecCount: boolean
   onHandleSelectedPlanChange: (plan: StatementModel[] | []) => void
 }
 
 const PlanTable = ({
   boundPlanDigest,
   plans,
+  showIaExecCount,
   onHandleSelectedPlanChange
 }: PlanTableProps) => {
-  const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
+  const planColumns = useMemo(
+    () => genPlanColumns(plans || [], showIaExecCount),
+    [plans, showIaExecCount]
+  )
 
   const selection = useRef(
     new Selection({

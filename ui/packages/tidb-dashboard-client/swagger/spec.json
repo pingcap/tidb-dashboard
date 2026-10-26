@@ -765,13 +765,17 @@
                 }
             }
         },
-        "/diagnose/reports/{id}/data.js": {
+        "/diagnose/reports/{id}/action_token": {
             "get": {
-                "description": "Get sql diagnosis report data",
-                "produces": [
-                    "text/javascript"
+                "security": [
+                    {
+                        "JwtAuth": []
+                    }
                 ],
-                "summary": "SQL diagnosis report data",
+                "produces": [
+                    "text/plain"
+                ],
+                "summary": "Generate an action token for viewing a diagnosis report",
                 "parameters": [
                     {
                         "type": "string",
@@ -786,6 +790,57 @@
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/diagnose/reports/{id}/data.js": {
+            "get": {
+                "description": "Get sql diagnosis report data",
+                "produces": [
+                    "text/javascript"
+                ],
+                "summary": "SQL diagnosis report data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "report id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report action token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     }
                 }
@@ -805,6 +860,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "report action token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -812,6 +874,12 @@
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     }
                 }
@@ -4686,6 +4754,9 @@
         "info.WhoAmIResponse": {
             "type": "object",
             "properties": {
+                "can_manage_sso": {
+                    "type": "boolean"
+                },
                 "display_name": {
                     "type": "string"
                 },
@@ -5344,6 +5415,9 @@
                     "description": "latency",
                     "type": "number"
                 },
+                "read_pool_task_details": {
+                    "type": "string"
+                },
                 "request_count": {
                     "description": "Coprocessor",
                     "type": "integer"
@@ -5483,9 +5557,22 @@
         },
         "sso.SetConfigRequest": {
             "type": "object",
+            "required": [
+                "sql_user"
+            ],
             "properties": {
+                "clear_client_secret": {
+                    "description": "ClearClientSecret explicitly removes a stored secret instead of preserving a redacted value.",
+                    "type": "boolean"
+                },
                 "config": {
                     "$ref": "#/definitions/config.SSOCoreConfig"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "sql_user": {
+                    "type": "string"
                 }
             }
         },
@@ -5704,6 +5791,9 @@
                     "type": "integer"
                 },
                 "first_seen": {
+                    "type": "integer"
+                },
+                "ia_exec_count": {
                     "type": "integer"
                 },
                 "index_names": {

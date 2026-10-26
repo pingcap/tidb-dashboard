@@ -13,7 +13,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
-const typeID utils.AuthType = 2
+const typeID = utils.AuthTypeSSO
 
 type Authenticator struct {
 	user.BaseAuthenticator
@@ -56,6 +56,10 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 
 func (a *Authenticator) IsEnabled() (bool, error) {
 	return a.ssoService.IsEnabled()
+}
+
+func (a *Authenticator) ProcessSession(u *utils.SessionUser) bool {
+	return a.ssoService.IsSessionValid(u)
 }
 
 func (a *Authenticator) SignOutInfo(u *utils.SessionUser, redirectURL string) (*user.SignOutInfo, error) {

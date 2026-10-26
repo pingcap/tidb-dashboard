@@ -8,7 +8,7 @@ import { CardTabs, CardTable } from '@lib/components'
 
 import { tabBasicItems } from './DetailTabBasic'
 import { tabTimeItems } from './DetailTabTime'
-import { tabCoprItems } from './DetailTabCopr'
+import { tabCoprItems, tabReadPoolItems } from './DetailTabCopr'
 import { tabTxnItems } from './DetailTabTxn'
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
 import { SlowQueryContext } from '../../context'
@@ -80,10 +80,30 @@ export default function DetailTabs({ data }: { data: SlowqueryModel }) {
         title: t('slow_query.detail.tabs.copr'),
         content: () => {
           const columnsSet = new Set(schemaColumns)
-          const items = tabCoprItems(data).filter((item) =>
+          const coprItems = tabCoprItems(data).filter((item) =>
             columnsSet.has(item.key)
           )
+          // Keep pool scheduling details next to request metrics, before storage I/O.
+          const readPoolItems = tabReadPoolItems(data, t)
+          const storageStart = coprItems.findIndex(
+            (item) => item.key === 'rocksdb_block_cache_hit_count'
+          )
+          const insertAt = storageStart === -1 ? coprItems.length : storageStart
+          const items = [
+            ...coprItems.slice(0, insertAt),
+            ...readPoolItems,
+            ...coprItems.slice(insertAt)
+          ]
           const columns = valueColumns('slow_query.fields.')
+          // Use the description space for compact pool summaries, without wider rows.
+          const descriptionColumn = columns.find(
+            (column) => column.key === 'description'
+          )
+          if (descriptionColumn) {
+            const renderDescription = descriptionColumn.onRender
+            descriptionColumn.onRender = (item, index, column) =>
+              item.description ?? renderDescription?.(item, index, column)
+          }
           return (
             <CardTable
               cardNoMargin

@@ -27,12 +27,17 @@ export interface ISystemReportDataSource {
     id: string,
     options?: ReqConfig
   ): AxiosPromise<DiagnoseReport>
+
+  diagnoseReportsIdActionTokenGet(
+    id: string,
+    options?: ReqConfig
+  ): AxiosPromise<string>
 }
 
 export interface ISystemReportConfig extends IContextConfig {
   publicPathBase: string
 
-  fullReportLink(reportId: string): string
+  fullReportLink(reportId: string, reportToken: string): string
 }
 
 export interface ISystemReportContext {

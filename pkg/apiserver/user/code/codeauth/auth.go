@@ -9,21 +9,28 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-const typeID utils.AuthType = 1
+const typeID = utils.AuthTypeCode
 
 var ErrSignInInvalidCode = user.ErrNSSignIn.NewType("invalid_code") // Invalid or expired
 
 type Authenticator struct {
 	user.BaseAuthenticator
 	sharingCodeService *code.Service
+	ssoService         ssoSessionValidator
 }
 
-func newAuthenticator(sharingCodeService *code.Service) *Authenticator {
+type ssoSessionValidator interface {
+	IsSessionValid(*utils.SessionUser) bool
+}
+
+func newAuthenticator(sharingCodeService *code.Service, ssoService *sso.Service) *Authenticator {
 	return &Authenticator{
 		sharingCodeService: sharingCodeService,
+		ssoService:         ssoService,
 	}
 }
 
@@ -44,6 +51,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	return session, nil
 }
 
-func (a *Authenticator) ProcessSession(user *utils.SessionUser) bool {
-	return !time.Now().After(user.SharedSessionExpireAt)
+func (a *Authenticator) ProcessSession(u *utils.SessionUser) bool {
+	return !time.Now().After(u.SharedSessionExpireAt) &&
+		(u.SSOConfigRevision == "" || a.ssoService.IsSessionValid(u))
 }

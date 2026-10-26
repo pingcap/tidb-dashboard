@@ -70,7 +70,7 @@ slow_query:
     backoff_total: Backoff Total
     backoff_total_tooltip: 'Cumulative backoff sleep of recorded requests in the statement context. Overlaps with Backoff Time and Commit Backoff Time; do not add them. Parallel totals may exceed query wall time. Zero does not prove no backoff.'
     read_resolve_lock_rpc_time: Read Resolve Lock Time
-    read_resolve_lock_rpc_time_tooltip: 'Cumulative recorded read-path ResolveLock RPC time from this execution plan. Does not represent all lock waiting, status checks or backoff. Parallel totals may exceed query wall time. Unavailable statistics are shown as —.'
+    read_resolve_lock_rpc_time_tooltip: 'Cumulative recorded synchronous ResolveLocks call time on the read path, including status checks and retries within each call. Excludes lock-wait backoff after the call returns. Parallel totals may exceed query wall time. Unavailable statistics are shown as —.'
     backoff_time: Execution Backoff Time
     backoff_time_tooltip: 'Cumulative backoff sleep of Coprocessor tasks. Point_Get and transaction commit backoff are excluded. Parallel totals may exceed query wall time.'
     lock_keys_time: Lock Keys Time
@@ -80,7 +80,7 @@ slow_query:
     local_latch_wait_time: Local Latch Wait Time
     local_latch_wait_time_tooltip: Time consumed when {{distro.tidb}} waits for the lock in the current {{distro.tidb}} instance before 2PC commit phase when transaction commits
     resolve_lock_time: Commit Resolve Lock Time
-    resolve_lock_time_tooltip: 'Cumulative ResolveLock process time during transaction commit. This is separate from read-path ResolveLock RPC time.'
+    resolve_lock_time_tooltip: 'Cumulative ResolveLocks call time during transaction commit, including prewrite. Includes status checks and retries within each call; excludes lock-wait backoff after the call returns.'
     prewrite_time: Prewrite Time
     prewrite_time_tooltip: Time consumed in 2PC prewrite phase when transaction commits
     wait_prewrite_binlog_time: Wait Binlog Prewrite Time
@@ -101,6 +101,27 @@ slow_query:
     cop_proc_addr_tooltip: The address of the {{distro.tikv}} that takes most time process the Coprocessor request
     cop_wait_addr: Copr Address (Wait)
     cop_wait_addr_tooltip: The address of the {{distro.tikv}} that takes most time wait the Coprocessor request
+
+    read_pool_tasks: Read Pool Tasks
+    read_pool_tasks_tooltip: Number of Read Pool tasks; hover over metric values for aggregate statistics
+    read_pool_fair_queue: Fair queue
+    read_pool_fair_queue_tooltip: Whether keyspace fair scheduling was enabled
+    read_pool_poll_count: Poll Count
+    read_pool_poll_count_tooltip: Total number of task polls
+    read_pool_dispatch_count: Dispatch Count
+    read_pool_dispatch_count_tooltip: Total number of task dispatches
+    read_pool_task_wall_time: Task Wall Time
+    read_pool_task_wall_time_tooltip: Total wall time of Read Pool tasks
+    read_pool_queue_wait: Queue Wait
+    read_pool_queue_wait_tooltip: Total queue wait time
+    read_pool_wake_wait: Wake Wait
+    read_pool_wake_wait_tooltip: Total wake wait time
+    read_pool_waited_task_slices: Waited Task Slices
+    read_pool_waited_task_slices_tooltip: Total task slices waited in the fair queue
+    read_pool_poll_cpu: Poll CPU
+    read_pool_poll_cpu_tooltip: Total CPU time spent polling tasks
+    read_pool_poll_wall: Poll Wall
+    read_pool_poll_wall_tooltip: Total wall time spent polling tasks
 
     txn_start_ts: Start Timestamp
     txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
@@ -182,6 +203,13 @@ slow_query:
       txn: Transaction
       session_attrs: Session Attributes
       warnings: Warnings
+    read_pool:
+      enabled: Enabled
+      disabled: Disabled
+      total: Total
+      avg: Average
+      max: Maximum
+      min: Minimum
   toolbar:
     schemas:
       placeholder: All Databases

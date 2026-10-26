@@ -3,8 +3,10 @@
 package keyvisual
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -155,17 +157,17 @@ func (s *Service) newLabelStrategy(
 	wg *sync.WaitGroup,
 	etcdClient *clientv3.Client,
 	tidbClient *tidb.Client,
-) decorator.LabelStrategy {
+) (decorator.LabelStrategy, error) {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, etcdClient, tidbClient)
+		return decorator.TiDBLabelStrategy(lc, wg, etcdClient, tidbClient), nil
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
-		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
+		return decorator.SeparatorLabelStrategy(s.keyVisualCfg), nil
 	default:
-		panic("unreachable")
+		return nil, fmt.Errorf("unsupported key visualizer policy %q", s.keyVisualCfg.Policy)
 	}
 }
 
@@ -254,7 +256,7 @@ func (s *Service) heatmaps(c *gin.Context) {
 		}
 		endTime = time.Unix(tsSec, 0)
 	}
-	if !startTime.Before(endTime) || (endKey != "" && startKey >= endKey) {
+	if !startTime.Before(endTime) {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -267,15 +269,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 		zap.String("type", typ),
 	)
 
-	if startKeyBytes, err := hex.DecodeString(startKey); err == nil {
-		startKey = string(startKeyBytes)
-	} else {
-		c.JSON(http.StatusBadRequest, "bad request")
-		return
-	}
-	if endKeyBytes, err := hex.DecodeString(endKey); err == nil {
-		endKey = string(endKeyBytes)
-	} else {
+	startKey, endKey, err := decodeKeyRange(startKey, endKey)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
@@ -289,6 +284,21 @@ func (s *Service) heatmaps(c *gin.Context) {
 	}
 	// ----------
 	c.JSON(http.StatusOK, resp)
+}
+
+func decodeKeyRange(startKey, endKey string) (string, string, error) {
+	startKeyBytes, err := hex.DecodeString(startKey)
+	if err != nil {
+		return "", "", fmt.Errorf("decode start key: %w", err)
+	}
+	endKeyBytes, err := hex.DecodeString(endKey)
+	if err != nil {
+		return "", "", fmt.Errorf("decode end key: %w", err)
+	}
+	if len(endKeyBytes) > 0 && bytes.Compare(startKeyBytes, endKeyBytes) >= 0 {
+		return "", "", fmt.Errorf("start key must be less than end key")
+	}
+	return string(startKeyBytes), string(endKeyBytes), nil
 }
 
 func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Client) {

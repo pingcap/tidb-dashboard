@@ -303,6 +303,12 @@ export interface SlowqueryModel {
      */
     'query_time'?: number;
     /**
+     *
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'read_pool_task_details'?: string;
+    /**
      * Coprocessor
      * @type {number}
      * @memberof SlowqueryModel

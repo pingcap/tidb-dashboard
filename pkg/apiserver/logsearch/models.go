@@ -5,6 +5,7 @@ package logsearch
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -61,6 +62,13 @@ type SearchLogRequest struct {
 	Patterns []string `json:"patterns"`
 }
 
+func (r *SearchLogRequest) Validate() error {
+	if r.MinLevel < LogLevelUnknown || r.MinLevel > LogLevelError {
+		return fmt.Errorf("invalid minimum log level: %d", r.MinLevel)
+	}
+	return nil
+}
+
 func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Target) *diagnosticspb.SearchLogRequest {
 	levels := PBLogLevelSlice[r.MinLevel:]
 	return &diagnosticspb.SearchLogRequest{
@@ -70,6 +78,13 @@ func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Tar
 		Patterns:  r.Patterns,
 		Target:    target,
 	}
+}
+
+func (r *SearchLogRequest) convertToPBChecked(target diagnosticspb.SearchLogRequest_Target) (*diagnosticspb.SearchLogRequest, error) {
+	if err := r.Validate(); err != nil {
+		return nil, err
+	}
+	return r.ConvertToPB(target), nil
 }
 
 func (r *SearchLogRequest) Scan(src interface{}) error {

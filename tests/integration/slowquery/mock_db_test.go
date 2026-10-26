@@ -147,6 +147,14 @@ func (s *testMockDBSuite) TestGetListAllFieldsRequest() {
 	s.Require().NotEmpty(d.Host)
 	s.requireSessionConnectAttrs(d.SessionConnectAttrs)
 	s.requireIARemoteReadFields(d.IARemoteReadSegmentSize, d.IARemoteReadSegmentWaitTime)
+	fields, err := slowquery.GetAvailableFields(s.sysSchema, s.mockDBSession())
+	s.Require().NoError(err)
+	if slices.Contains(fields, "read_pool_task_details") {
+		s.Require().NotNil(d.ReadPoolTaskDetails)
+		s.Require().Equal("{tasks:1, poll_count:{total:2}}", *d.ReadPoolTaskDetails)
+	} else {
+		s.Require().Nil(d.ReadPoolTaskDetails)
+	}
 	s.Require().NotEmpty(d.IndexNames)
 	s.Require().NotEmpty(d.Instance)
 	s.Require().NotEmpty(d.IsInternal)

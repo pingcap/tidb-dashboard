@@ -1029,15 +1029,55 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Get sql diagnosis report data
-         * @summary SQL diagnosis report data
+         *
+         * @summary Generate an action token for viewing a diagnosis report
          * @param {string} id report id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        diagnoseReportsIdDataJsGet: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        diagnoseReportsIdActionTokenGet: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('diagnoseReportsIdActionTokenGet', 'id', id)
+            const localVarPath = `/diagnose/reports/{id}/action_token`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication JwtAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Get sql diagnosis report data
+         * @summary SQL diagnosis report data
+         * @param {string} id report id
+         * @param {string} token report action token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        diagnoseReportsIdDataJsGet: async (id: string, token: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('diagnoseReportsIdDataJsGet', 'id', id)
+            // verify required parameter 'token' is not null or undefined
+            assertParamExists('diagnoseReportsIdDataJsGet', 'token', token)
             const localVarPath = `/diagnose/reports/{id}/data.js`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1050,6 +1090,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (token !== undefined) {
+                localVarQueryParameter['token'] = token;
+            }
 
 
     
@@ -1066,12 +1110,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * Get sql diagnosis report HTML
          * @summary SQL diagnosis report
          * @param {string} id report id
+         * @param {string} token report action token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        diagnoseReportsIdDetailGet: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        diagnoseReportsIdDetailGet: async (id: string, token: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('diagnoseReportsIdDetailGet', 'id', id)
+            // verify required parameter 'token' is not null or undefined
+            assertParamExists('diagnoseReportsIdDetailGet', 'token', token)
             const localVarPath = `/diagnose/reports/{id}/detail`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1084,6 +1131,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (token !== undefined) {
+                localVarQueryParameter['token'] = token;
+            }
 
 
     
@@ -4531,25 +4582,38 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Get sql diagnosis report data
-         * @summary SQL diagnosis report data
+         *
+         * @summary Generate an action token for viewing a diagnosis report
          * @param {string} id report id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async diagnoseReportsIdDataJsGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.diagnoseReportsIdDataJsGet(id, options);
+        async diagnoseReportsIdActionTokenGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.diagnoseReportsIdActionTokenGet(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Get sql diagnosis report data
+         * @summary SQL diagnosis report data
+         * @param {string} id report id
+         * @param {string} token report action token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async diagnoseReportsIdDataJsGet(id: string, token: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.diagnoseReportsIdDataJsGet(id, token, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * Get sql diagnosis report HTML
          * @summary SQL diagnosis report
          * @param {string} id report id
+         * @param {string} token report action token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async diagnoseReportsIdDetailGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.diagnoseReportsIdDetailGet(id, options);
+        async diagnoseReportsIdDetailGet(id: string, token: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.diagnoseReportsIdDetailGet(id, token, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5696,24 +5760,36 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.diagnoseReportsGet(options).then((request) => request(axios, basePath));
         },
         /**
-         * Get sql diagnosis report data
-         * @summary SQL diagnosis report data
+         *
+         * @summary Generate an action token for viewing a diagnosis report
          * @param {string} id report id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        diagnoseReportsIdDataJsGet(id: string, options?: any): AxiosPromise<string> {
-            return localVarFp.diagnoseReportsIdDataJsGet(id, options).then((request) => request(axios, basePath));
+        diagnoseReportsIdActionTokenGet(id: string, options?: any): AxiosPromise<string> {
+            return localVarFp.diagnoseReportsIdActionTokenGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Get sql diagnosis report data
+         * @summary SQL diagnosis report data
+         * @param {string} id report id
+         * @param {string} token report action token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        diagnoseReportsIdDataJsGet(id: string, token: string, options?: any): AxiosPromise<string> {
+            return localVarFp.diagnoseReportsIdDataJsGet(id, token, options).then((request) => request(axios, basePath));
         },
         /**
          * Get sql diagnosis report HTML
          * @summary SQL diagnosis report
          * @param {string} id report id
+         * @param {string} token report action token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        diagnoseReportsIdDetailGet(id: string, options?: any): AxiosPromise<string> {
-            return localVarFp.diagnoseReportsIdDetailGet(id, options).then((request) => request(axios, basePath));
+        diagnoseReportsIdDetailGet(id: string, token: string, options?: any): AxiosPromise<string> {
+            return localVarFp.diagnoseReportsIdDetailGet(id, token, options).then((request) => request(axios, basePath));
         },
         /**
          * Get diagnosis report status
@@ -6770,6 +6846,20 @@ export interface DefaultApiDiagnoseMetricsRelationViewGetRequest {
 }
 
 /**
+ * Request parameters for diagnoseReportsIdActionTokenGet operation in DefaultApi.
+ * @export
+ * @interface DefaultApiDiagnoseReportsIdActionTokenGetRequest
+ */
+export interface DefaultApiDiagnoseReportsIdActionTokenGetRequest {
+    /**
+     * report id
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdActionTokenGet
+     */
+    readonly id: string
+}
+
+/**
  * Request parameters for diagnoseReportsIdDataJsGet operation in DefaultApi.
  * @export
  * @interface DefaultApiDiagnoseReportsIdDataJsGetRequest
@@ -6781,6 +6871,13 @@ export interface DefaultApiDiagnoseReportsIdDataJsGetRequest {
      * @memberof DefaultApiDiagnoseReportsIdDataJsGet
      */
     readonly id: string
+
+    /**
+     * report action token
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdDataJsGet
+     */
+    readonly token: string
 }
 
 /**
@@ -6795,6 +6892,13 @@ export interface DefaultApiDiagnoseReportsIdDetailGetRequest {
      * @memberof DefaultApiDiagnoseReportsIdDetailGet
      */
     readonly id: string
+
+    /**
+     * report action token
+     * @type {string}
+     * @memberof DefaultApiDiagnoseReportsIdDetailGet
+     */
+    readonly token: string
 }
 
 /**
@@ -8108,6 +8212,18 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     *
+     * @summary Generate an action token for viewing a diagnosis report
+     * @param {DefaultApiDiagnoseReportsIdActionTokenGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public diagnoseReportsIdActionTokenGet(requestParameters: DefaultApiDiagnoseReportsIdActionTokenGetRequest, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).diagnoseReportsIdActionTokenGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Get sql diagnosis report data
      * @summary SQL diagnosis report data
      * @param {DefaultApiDiagnoseReportsIdDataJsGetRequest} requestParameters Request parameters.
@@ -8116,7 +8232,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public diagnoseReportsIdDataJsGet(requestParameters: DefaultApiDiagnoseReportsIdDataJsGetRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsIdDataJsGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).diagnoseReportsIdDataJsGet(requestParameters.id, requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8128,7 +8244,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public diagnoseReportsIdDetailGet(requestParameters: DefaultApiDiagnoseReportsIdDetailGetRequest, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).diagnoseReportsIdDetailGet(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).diagnoseReportsIdDetailGet(requestParameters.id, requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

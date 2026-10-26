@@ -1,7 +1,6 @@
-import { CheckCircleFilled } from '@ant-design/icons'
-import { SsoSSOImpersonationModel } from '@lib/client'
+import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'
 import { AnimatedSkeleton, ErrorBar } from '@lib/components'
-import { useIsFeatureSupport, useIsWriteable } from '@lib/utils/store'
+import { store, useCanManageSSO, useIsFeatureSupport } from '@lib/utils/store'
 import { useChange } from '@lib/utils/useChange'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import {
@@ -10,155 +9,13 @@ import {
   Checkbox,
   Form,
   Input,
-  Modal,
   Space,
   Switch,
   Typography
 } from 'antd'
-import React, { useContext } from 'react'
-import { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DEFAULT_FORM_ITEM_STYLE } from '../utils/helper'
 import { UserProfileContext } from '../context'
-
-interface IUserAuthInputProps {
-  value?: SsoSSOImpersonationModel
-  onChange?: (value: SsoSSOImpersonationModel) => void
-}
-
-function isImpersonationNotFailed(imp?: SsoSSOImpersonationModel) {
-  return Boolean(
-    imp &&
-      imp.last_impersonate_status !== 'auth_fail' &&
-      imp.last_impersonate_status !== 'insufficient_privileges'
-  )
-}
-
-function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
-  const ctx = useContext(UserProfileContext)
-
-  const { t } = useTranslation()
-  const [modalVisible, setModalVisible] = useState(false)
-  const [isPosting, setIsPosting] = useState(false)
-  const isWriteable = useIsWriteable()
-  const handleClose = useCallback(() => {
-    setModalVisible(false)
-  }, [])
-
-  const handleAuthnClick = useCallback(() => {
-    setModalVisible(true)
-  }, [])
-
-  const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
-
-  const handleFinish = useCallback(
-    async (data) => {
-      setIsPosting(true)
-      try {
-        const resp = await ctx!.ds.userSSOCreateImpersonation({
-          sql_user: data.user,
-          password: data.password
-        })
-        setModalVisible(false)
-        onChange?.(resp.data)
-      } finally {
-        setIsPosting(false)
-      }
-    },
-    [onChange, ctx]
-  )
-
-  return (
-    <>
-      {Boolean(!value) && (
-        <Space>
-          <Button onClick={handleAuthnClick} disabled={!isWriteable}>
-            {t('user_profile.sso.form.user.authn_button')}
-          </Button>
-        </Space>
-      )}
-      {Boolean(value) && (
-        <Space>
-          <span>{value!.sql_user}</span>
-
-          {isImpersonationNotFailed(value) && (
-            <Typography.Text type="success">
-              <CheckCircleFilled />{' '}
-              {t('user_profile.sso.form.user.authn_status.ok')}
-            </Typography.Text>
-          )}
-          {value?.last_impersonate_status === 'auth_fail' && (
-            <Typography.Text type="danger">
-              <CheckCircleFilled />{' '}
-              {t('user_profile.sso.form.user.authn_status.auth_failed')}
-            </Typography.Text>
-          )}
-          {value?.last_impersonate_status === 'insufficient_privileges' && (
-            <Typography.Text type="danger">
-              <CheckCircleFilled />{' '}
-              {t(
-                'user_profile.sso.form.user.authn_status.insufficient_privileges'
-              )}
-            </Typography.Text>
-          )}
-
-          <Button onClick={handleAuthnClick} disabled={!isWriteable}>
-            {t('user_profile.sso.form.user.modify_authn_button')}
-          </Button>
-        </Space>
-      )}
-      <Modal
-        title={t('user_profile.sso.form.user.authn_dialog.title')}
-        visible={modalVisible}
-        destroyOnClose
-        onCancel={handleClose}
-        width={600}
-        footer={null}
-      >
-        <Form
-          layout="vertical"
-          onFinish={handleFinish}
-          initialValues={{ user: value?.sql_user || 'root', password: '' }}
-        >
-          <Form.Item
-            name="user"
-            label={t('user_profile.sso.form.user.authn_dialog.user')}
-          >
-            <Input
-              style={DEFAULT_FORM_ITEM_STYLE}
-              disabled={!supportNonRootLogin}
-            />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            label={t('user_profile.sso.form.user.authn_dialog.password')}
-          >
-            <Input style={DEFAULT_FORM_ITEM_STYLE} type="password" />
-          </Form.Item>
-          <Form.Item>
-            <Alert
-              message={t('user_profile.sso.form.user.authn_dialog.info')}
-              type="info"
-              showIcon
-            />
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={isPosting}>
-                {t('user_profile.sso.form.user.authn_dialog.submit')}
-              </Button>
-              <Button onClick={handleClose}>
-                {t('user_profile.sso.form.user.authn_dialog.close')}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </>
-  )
-}
-
-const UserAuthInputMemo = React.memo(UserAuthInput)
 
 export function SSOForm() {
   const ctx = useContext(UserProfileContext)
@@ -181,30 +38,47 @@ export function SSOForm() {
     sendRequest: impSendRequest
   } = useClientRequest(ctx!.ds.userSSOListImpersonations)
   const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
-  const isWriteable = useIsWriteable()
+  const canManageSSO = useCanManageSSO()
+  const unsupportedBackend = store.useState(
+    (s) => Boolean(s.whoAmI) && typeof s.whoAmI?.can_manage_sso !== 'boolean'
+  )
+  // Management is restricted to direct SQL sessions, whose display name is the SQL username.
+  const currentSQLUser = store.useState((s) => s.whoAmI?.display_name || '')
+  const supportNonRootLogin = useIsFeatureSupport('nonRootLogin')
+  const impersonation = impData?.[0]
+  const authorizationError =
+    impersonation?.last_impersonate_status === 'auth_fail'
+      ? 'auth_failed'
+      : impersonation?.last_impersonate_status === 'insufficient_privileges'
+      ? 'insufficient_privileges'
+      : undefined
 
   useChange(() => {
     if (config) {
-      form.setFieldsValue(config)
-      initialForm.current = { ...config }
+      form.setFieldsValue({ ...config, clear_client_secret: false })
+      initialForm.current = {
+        ...initialForm.current,
+        ...config,
+        clear_client_secret: false
+      }
     }
   }, [config])
 
   useChange(() => {
     if (impData) {
-      let rootImp: SsoSSOImpersonationModel | undefined = impData[0]
-      const update = { user_authenticated: rootImp }
-      form.setFieldsValue(update)
-      initialForm.current = {
-        ...initialForm.current,
-        ...update
+      const update = {
+        sql_user: config?.enabled
+          ? impData[0]?.sql_user || 'root'
+          : currentSQLUser
       }
+      form.setFieldsValue(update)
+      initialForm.current = { ...initialForm.current, ...update }
     }
-  }, [impData])
+  }, [impData, config, currentSQLUser])
 
   // TODO: Extract common logic
   const handleCancel = useCallback(() => {
-    form.setFieldsValue({ ...initialForm.current })
+    form.setFieldsValue({ ...initialForm.current, password: '' })
     setIsChanged(false)
   }, [form])
 
@@ -212,19 +86,27 @@ export function SSOForm() {
     async (data) => {
       setIsPosting(true)
       try {
-        await ctx!.ds.userSSOSetConfig({ config: data })
+        const { sql_user, password, clear_client_secret, ...config } = data
+        await ctx!.ds.userSSOSetConfig({
+          config,
+          sql_user,
+          password,
+          clear_client_secret
+        })
+        form.setFieldsValue({
+          password: '',
+          client_secret: '',
+          clear_client_secret: false
+        })
         sendRequest()
+        impSendRequest()
         setIsChanged(false)
       } finally {
         setIsPosting(false)
       }
     },
-    [sendRequest, ctx]
+    [sendRequest, impSendRequest, ctx, form]
   )
-
-  const handleAuthStateChange = useCallback(() => {
-    impSendRequest()
-  }, [impSendRequest])
 
   return (
     <Form
@@ -235,13 +117,31 @@ export function SSOForm() {
     >
       <AnimatedSkeleton loading={isLoading || impIsLoading}>
         {(error || impError) && <ErrorBar errors={[error || impError]} />}
+        {unsupportedBackend && (
+          <Alert
+            type="warning"
+            showIcon
+            message={t('user_profile.sso.form.upgrade_required')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
         <Form.Item
           name="enabled"
           label={t('user_profile.sso.switch.label')}
           extra={t('user_profile.sso.switch.extra')}
           valuePropName="checked"
         >
-          <Switch disabled={!isWriteable} />
+          <Switch
+            disabled={!canManageSSO}
+            onChange={(enabled) =>
+              form.setFieldsValue({
+                sql_user: enabled
+                  ? impData?.[0]?.sql_user || 'root'
+                  : currentSQLUser,
+                password: ''
+              })
+            }
+          />
         </Form.Item>
         <Form.Item noStyle shouldUpdate>
           {(f) =>
@@ -252,7 +152,7 @@ export function SSOForm() {
                   label={t('user_profile.sso.form.client_id')}
                   rules={[{ required: true }]}
                 >
-                  <Input disabled={!isWriteable} style={{ width: 320 }} />
+                  <Input disabled={!canManageSSO} style={{ width: 320 }} />
                 </Form.Item>
                 {
                   // to compatible with old version
@@ -264,20 +164,37 @@ export function SSOForm() {
                       tooltip={t('user_profile.sso.form.client_secret_tooltip')}
                     >
                       <Input
-                        disabled={!isWriteable}
+                        disabled={
+                          !canManageSSO ||
+                          f.getFieldValue('clear_client_secret')
+                        }
                         style={{ width: 320 }}
                         placeholder="********"
                       />
                     </Form.Item>
                   )
                 }
+                {config?.client_secret !== undefined && (
+                  <Form.Item name="clear_client_secret" valuePropName="checked">
+                    <Checkbox
+                      disabled={!canManageSSO}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          form.setFieldsValue({ client_secret: '' })
+                        }
+                      }}
+                    >
+                      {t('user_profile.sso.form.clear_client_secret')}
+                    </Checkbox>
+                  </Form.Item>
+                )}
                 <Form.Item
                   name="scopes"
                   label={t('user_profile.sso.form.scopes')}
                   rules={[{ required: false }]}
                 >
                   <Input
-                    disabled={!isWriteable}
+                    disabled={!canManageSSO}
                     style={{ width: 320 }}
                     placeholder="openid profile email"
                   />
@@ -288,42 +205,85 @@ export function SSOForm() {
                   rules={[{ required: true }]}
                 >
                   <Input
-                    disabled={!isWriteable}
+                    disabled={!canManageSSO}
                     style={{ width: 320 }}
                     placeholder="https://example.com"
                   />
-                </Form.Item>
-                <Form.Item
-                  label={t('user_profile.sso.form.user.label')}
-                  extra={t('user_profile.sso.form.user.extra')}
-                  name="user_authenticated"
-                  rules={[
-                    {
-                      validator(_, value) {
-                        if (!value) {
-                          return Promise.reject(
-                            new Error(t('user_profile.sso.form.user.must_auth'))
-                          )
-                        }
-                        return Promise.resolve()
-                      }
-                    }
-                  ]}
-                >
-                  <UserAuthInputMemo onChange={handleAuthStateChange} />
                 </Form.Item>
                 <Form.Item
                   name="is_read_only"
                   label={t('user_profile.sso.form.is_read_only')}
                   valuePropName="checked"
                 >
-                  <Checkbox disabled={!isWriteable} />
+                  <Checkbox disabled={!canManageSSO} />
                 </Form.Item>
               </>
             )
           }
         </Form.Item>
-        {isChanged && (
+        {impersonation && (
+          <Form.Item
+            label={t('user_profile.sso.form.authorization_status')}
+            extra={t('user_profile.sso.form.user.extra')}
+          >
+            <Space>
+              <span>{impersonation.sql_user}</span>
+              <Typography.Text type={authorizationError ? 'danger' : 'success'}>
+                {authorizationError ? (
+                  <CloseCircleFilled />
+                ) : (
+                  <CheckCircleFilled />
+                )}{' '}
+                {t(
+                  `user_profile.sso.form.user.authn_status.${
+                    authorizationError || 'ok'
+                  }`
+                )}
+              </Typography.Text>
+            </Space>
+          </Form.Item>
+        )}
+        <Alert
+          type="info"
+          showIcon
+          message={t('user_profile.sso.form.reauthorize')}
+          style={{ marginBottom: 16 }}
+        />
+        <Form.Item noStyle shouldUpdate>
+          {(f) => (
+            <Form.Item
+              name="sql_user"
+              label={t(
+                f.getFieldValue('enabled')
+                  ? 'user_profile.sso.form.user.authn_dialog.user'
+                  : 'user_profile.sso.form.reset_user'
+              )}
+              rules={[{ required: true }]}
+            >
+              <Input
+                disabled={
+                  !canManageSSO ||
+                  !f.getFieldValue('enabled') ||
+                  !supportNonRootLogin ||
+                  Boolean(impData?.length)
+                }
+                style={{ width: 320 }}
+                autoComplete="username"
+              />
+            </Form.Item>
+          )}
+        </Form.Item>
+        <Form.Item
+          name="password"
+          label={t('user_profile.sso.form.user.authn_dialog.password')}
+        >
+          <Input.Password
+            disabled={!canManageSSO}
+            style={{ width: 320 }}
+            autoComplete="current-password"
+          />
+        </Form.Item>
+        {isChanged && canManageSSO && (
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={isPosting}>

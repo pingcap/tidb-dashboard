@@ -125,6 +125,7 @@ func (s *Service) queryPlans(
 		"min_latency",
 		"avg_latency",
 		"exec_count",
+		"ia_exec_count",
 		"avg_mem",
 		"max_mem",
 		"stmt_type", // required by quick plan binding

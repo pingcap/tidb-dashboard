@@ -40,6 +40,9 @@ class DataSource implements ISystemReportDataSource {
   diagnoseReportsIdStatusGet(id: string, options?: ReqConfig) {
     return client.getInstance().diagnoseReportsIdStatusGet({ id }, options)
   }
+  diagnoseReportsIdActionTokenGet(id: string, options?: ReqConfig) {
+    return client.getInstance().diagnoseReportsIdActionTokenGet({ id }, options)
+  }
 }
 
 class SystemReportConfig implements ISystemReportConfig {
@@ -49,9 +52,11 @@ class SystemReportConfig implements ISystemReportConfig {
 
   public publicPathBase = publicPathBase
 
-  public fullReportLink(reportId: string): string {
+  public fullReportLink(reportId: string, reportToken: string): string {
     const { orgId, clusterId } = this.extra
-    return `${publicPathBase}/diagnose-report/?orgId=${orgId}&clusterId=${clusterId}&reportId=${reportId}`
+    return `${publicPathBase}/diagnose-report/?orgId=${orgId}&clusterId=${clusterId}&reportId=${reportId}&reportToken=${encodeURIComponent(
+      reportToken
+    )}`
   }
 }
 

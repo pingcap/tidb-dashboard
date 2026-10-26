@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof" // #nosec
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"path"
@@ -28,6 +28,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
@@ -47,6 +48,7 @@ import (
 type DashboardCLIConfig struct {
 	ListenHost     string
 	ListenPort     int
+	PprofAddress   string
 	EnableDebugLog bool
 	CoreConfig     *config.Config
 	// key-visual file mode for debug
@@ -61,6 +63,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	flag.StringVarP(&cfg.ListenHost, "host", "h", "127.0.0.1", "listen host of the Dashboard Server")
 	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
+	flag.StringVar(&cfg.PprofAddress, "pprof-address", "", "listen address for the standalone pprof server (numeric loopback only, disabled by default)")
 	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", cfg.CoreConfig.DataDir, "path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.TempDir, "temp-dir", cfg.CoreConfig.TempDir, "path to the Dashboard Server temporary directory, used to store the searched logs")
@@ -124,6 +127,9 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
 		log.Fatal("Invalid PD Endpoint", zap.Error(err))
+	}
+	if err := validatePprofAddress(cfg.PprofAddress); err != nil {
+		log.Fatal("Invalid pprof address", zap.Error(err))
 	}
 
 	// keyvisual check
@@ -228,6 +234,56 @@ func loadDistroStringsRes() {
 	distro.ReplaceGlobal(distroStringsRes)
 }
 
+func newHTTPMux(uiHandler, apiHandler, swaggerHandler http.Handler) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
+	mux.Handle(config.UIPathPrefix, uiHandler)
+	mux.Handle(config.APIPathPrefix, apiHandler)
+	mux.Handle(config.SwaggerPathPrefix, swaggerHandler)
+	return mux
+}
+
+// validatePprofAddress prevents the unauthenticated diagnostic server from listening on external interfaces.
+func validatePprofAddress(address string) error {
+	if address == "" {
+		return nil
+	}
+
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		return err
+	}
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+		return nil
+	}
+	return fmt.Errorf("pprof address must use a numeric loopback host")
+}
+
+// newPprofMux exposes only the standard pprof handlers on the dedicated diagnostic server.
+func newPprofMux() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	return mux
+}
+
+const (
+	pprofReadTimeout     = 5 * time.Second
+	pprofShutdownTimeout = 5 * time.Second
+)
+
+// newPprofServer applies bounded request reads while allowing long-running profile responses.
+func newPprofServer() *http.Server {
+	return &http.Server{
+		Handler:           newPprofMux(),
+		ReadHeaderTimeout: pprofReadTimeout,
+		ReadTimeout:       pprofReadTimeout,
+	}
+}
+
 func main() {
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
@@ -272,12 +328,8 @@ func main() {
 	}
 	defer s.Stop(context.Background()) //nolint:errcheck
 
-	mux := http.DefaultServeMux
 	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
-	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
-	mux.Handle(config.UIPathPrefix, uiHandler)
-	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
-	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
+	mux := newHTTPMux(uiHandler, apiserver.Handler(s), swaggerserver.Handler())
 
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://%s/dashboard/", net.JoinHostPort(cliConfig.ListenHost, strconv.Itoa(cliConfig.ListenPort))))
@@ -292,7 +344,32 @@ func main() {
 		}
 	})
 
+	var pprofSrv *http.Server
+	if cliConfig.PprofAddress != "" {
+		pprofListener, err := net.Listen("tcp", cliConfig.PprofAddress)
+		if err != nil {
+			log.Fatal("pprof server listen failed", zap.String("addr", cliConfig.PprofAddress), zap.Error(err))
+		}
+		pprofSrv = newPprofServer()
+		log.Info("pprof server is listening", zap.String("addr", cliConfig.PprofAddress))
+		wg.Go(func() {
+			if err := pprofSrv.Serve(pprofListener); err != http.ErrServerClosed {
+				log.Error("pprof server aborted with an error", zap.Error(err))
+			}
+		})
+	}
+
 	<-ctx.Done()
+	if pprofSrv != nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), pprofShutdownTimeout)
+		if err := pprofSrv.Shutdown(shutdownCtx); err != nil {
+			log.Error("Can not stop pprof server gracefully", zap.Error(err))
+			if closeErr := pprofSrv.Close(); closeErr != nil {
+				log.Error("Can not force stop pprof server", zap.Error(closeErr))
+			}
+		}
+		cancel()
+	}
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Error("Can not stop server", zap.Error(err))
 	}

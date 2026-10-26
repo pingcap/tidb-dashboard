@@ -1,5 +1,5 @@
 import { Button, Descriptions, Progress } from 'antd'
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -14,6 +14,7 @@ function ReportStatus() {
 
   const { id } = useQueryParams()
   const { t } = useTranslation()
+  const [isOpening, setIsOpening] = useState(false)
 
   const {
     data: report,
@@ -26,6 +27,30 @@ function ReportStatus() {
     }
   )
 
+  async function handleViewReport() {
+    if (!report?.id) {
+      return
+    }
+    const reportWindow = window.open('', '_blank')
+    if (reportWindow) {
+      reportWindow.opener = null
+    }
+    setIsOpening(true)
+    try {
+      const tokenResp = await ctx!.ds.diagnoseReportsIdActionTokenGet(report.id)
+      const reportURL = ctx!.cfg.fullReportLink(report.id, tokenResp.data)
+      if (reportWindow) {
+        reportWindow.location.replace(reportURL)
+      } else {
+        window.open(reportURL, '_blank', 'noopener,noreferrer')
+      }
+    } catch {
+      reportWindow?.close()
+    } finally {
+      setIsOpening(false)
+    }
+  }
+
   return (
     <Head
       title={t('system_report.status.head.title')}
@@ -36,18 +61,13 @@ function ReportStatus() {
       }
       titleExtra={
         report && (
-          <Button type="primary" disabled={report?.progress! < 100}>
-            {/* Not using client basePath intentionally so that it can be handled by dev server */}
-            <a
-              // href={`${ctx!.cfg.publicPathBase}/api/diagnose/reports/${
-              //   report.id
-              // }/detail`}
-              href={ctx!.cfg.fullReportLink(report.id!)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t('system_report.status.head.view')}
-            </a>
+          <Button
+            type="primary"
+            disabled={report?.progress! < 100}
+            loading={isOpening}
+            onClick={handleViewReport}
+          >
+            {t('system_report.status.head.view')}
           </Button>
         )
       }

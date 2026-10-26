@@ -1355,6 +1355,7 @@ export interface InfoWhoAmIResponse {
      * @memberof InfoWhoAmIResponse
      */
     'is_writeable'?: boolean;
+    'can_manage_sso'?: boolean;
 }
 
 
@@ -2489,6 +2490,12 @@ export interface SlowqueryModel {
      */
     'query_time'?: number;
     /**
+     *
+     * @type {string}
+     * @memberof SlowqueryModel
+     */
+    'read_pool_task_details'?: string;
+    /**
      * Coprocessor
      * @type {number}
      * @memberof SlowqueryModel
@@ -2726,6 +2733,11 @@ export interface SsoSetConfigRequest {
      * @memberof SsoSetConfigRequest
      */
     'config'?: ConfigSSOCoreConfig;
+    /** SQL credentials must be supplied again for every SSO configuration change. */
+    'sql_user': string;
+    'password'?: string;
+    /** Explicitly remove the stored OIDC client secret. Blank secrets otherwise preserve it for the same provider and client. */
+    'clear_client_secret'?: boolean;
 }
 
 
@@ -3150,6 +3162,12 @@ export interface StatementModel {
      * @memberof StatementModel
      */
     'first_seen'?: number;
+    /**
+     *
+     * @type {number}
+     * @memberof StatementModel
+     */
+    'ia_exec_count'?: number;
     /**
      * 
      * @type {string}

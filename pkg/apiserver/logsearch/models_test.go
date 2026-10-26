@@ -8,11 +8,32 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
+
+func TestSearchLogRequestValidate(t *testing.T) {
+	for level := LogLevelUnknown; level <= LogLevelError; level++ {
+		req := SearchLogRequest{MinLevel: level}
+		pb, err := req.convertToPBChecked(diagnosticspb.SearchLogRequest_Normal)
+		if err != nil {
+			t.Fatalf("valid level %d was rejected: %v", level, err)
+		}
+		if got, want := len(pb.Levels), len(PBLogLevelSlice)-int(level); got != want {
+			t.Fatalf("level %d produced %d levels, want %d", level, got, want)
+		}
+	}
+
+	for _, level := range []LogLevel{-1, LogLevelError + 1, 99} {
+		req := SearchLogRequest{MinLevel: level}
+		if _, err := req.convertToPBChecked(diagnosticspb.SearchLogRequest_Normal); err == nil {
+			t.Fatalf("invalid level %d was accepted", level)
+		}
+	}
+}
 
 func TestTaskGroupDeleteOnlyRemovesWithinConfiguredDirectory(t *testing.T) {
 	gormDB, err := gorm.Open(sqlite.Open(filepath.Join(t.TempDir(), "test.sqlite.db")))

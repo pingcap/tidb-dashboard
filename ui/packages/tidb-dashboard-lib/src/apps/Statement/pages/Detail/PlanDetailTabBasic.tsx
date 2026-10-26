@@ -5,7 +5,10 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { StatementModel } from '@lib/client'
 import { DateTime, Pre, ValueWithTooltip, TextWrap } from '@lib/components'
 
-export const tabBasicItems = (data: StatementModel) => [
+export const tabBasicItems = (
+  data: StatementModel,
+  showIaExecCount: boolean
+) => [
   {
     key: 'table_names',
     value: (
@@ -33,6 +36,14 @@ export const tabBasicItems = (data: StatementModel) => [
     key: 'exec_count',
     value: <ValueWithTooltip.Short value={data.exec_count} />
   },
+  ...(showIaExecCount && typeof data.ia_exec_count === 'number'
+    ? [
+        {
+          key: 'ia_exec_count',
+          value: <ValueWithTooltip.Short value={data.ia_exec_count} />
+        }
+      ]
+    : []),
   {
     key: 'plan_cache_hits',
     value: <ValueWithTooltip.Short value={data.plan_cache_hits} />

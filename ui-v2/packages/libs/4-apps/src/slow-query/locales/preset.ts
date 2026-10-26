@@ -105,7 +105,7 @@ function useLocales() {
   tk("fields.resolve_lock_time", "Commit Resolve Lock Time")
   tk(
     "fields.resolve_lock_time.desc",
-    "Time consumed when {{distro.tidb}} resolves locks from other transactions during the transaction commit. It does not include lock resolution on the read path, whose recorded RPC time is available in the execution plan",
+    "Time consumed when {{distro.tidb}} resolves locks from other transactions during the transaction commit. It does not include lock resolution on the read path, whose recorded synchronous lock-resolution call time is available in the execution plan",
   )
   tk("fields.prewrite_time", "Prewrite Time")
   tk(

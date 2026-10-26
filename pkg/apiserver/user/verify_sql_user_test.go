@@ -35,16 +35,21 @@ func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *check.C) {
 		},
 		// 1
 		{
-			desc: "table privileges",
+			desc: "database privileges",
 			input: []string{
-				"GRANT SELECT,INSERT ON mysql.* TO 'dashboardAdmin'@'%'",
+				"GRANT ALL PRIVILEGES ON `test`.* TO 'databaseAdmin'@'%'",
 			},
-			expected: map[string]struct{}{
-				"SELECT": {},
-				"INSERT": {},
-			},
+			expected: map[string]struct{}{},
 		},
 		// 2
+		{
+			desc: "table privileges",
+			input: []string{
+				"GRANT ALL PRIVILEGES ON `test`.`orders` TO 'tableAdmin'@'%'",
+			},
+			expected: map[string]struct{}{},
+		},
+		// 3
 		{
 			desc: "global privileges",
 			input: []string{
@@ -58,11 +63,50 @@ func (t *testVerifySQLUserSuite) Test_parseUserGrants(c *check.C) {
 				"SYSTEM_VARIABLES_ADMIN": {},
 			},
 		},
-		// 3
+		// 4
 		{
 			desc: "role privileges",
 			input: []string{
 				"GRANT `app_read`@`%` TO `test`@`%`",
+			},
+			expected: map[string]struct{}{},
+		},
+		// 5
+		{
+			desc: "privilege-like text in account name",
+			input: []string{
+				"GRANT USAGE ON *.* TO 'dashboard,ALL PRIVILEGES ON ignored'@'%'",
+			},
+			expected: map[string]struct{}{
+				"USAGE": {},
+			},
+		},
+		// 6
+		{
+			desc: "privilege-like text in role name",
+			input: []string{
+				"GRANT `reader,ALL PRIVILEGES ON ignored`@`%` TO `test`@`%`",
+			},
+			expected: map[string]struct{}{},
+		},
+		// 7
+		{
+			desc: "spaces after privilege separators",
+			input: []string{
+				"GRANT PROCESS, SHOW DATABASES, CONFIG ON *.* TO 'dashboardAdmin'@'%'",
+			},
+			expected: map[string]struct{}{
+				"PROCESS":        {},
+				"SHOW DATABASES": {},
+				"CONFIG":         {},
+			},
+		},
+		// 8
+		{
+			desc: "empty grantee",
+			input: []string{
+				"GRANT ALL PRIVILEGES ON *.* TO ",
+				"GRANT ALL PRIVILEGES ON *.* TO    ",
 			},
 			expected: map[string]struct{}{},
 		},

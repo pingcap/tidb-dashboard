@@ -35,6 +35,9 @@ class DataSource implements ISystemReportDataSource {
   diagnoseReportsIdStatusGet(id: string, options?: ReqConfig) {
     return client.getInstance().diagnoseReportsIdStatusGet({ id }, options)
   }
+  diagnoseReportsIdActionTokenGet(id: string, options?: ReqConfig) {
+    return client.getInstance().diagnoseReportsIdActionTokenGet({ id }, options)
+  }
 }
 
 class SystemReportConfig implements ISystemReportConfig {
@@ -42,9 +45,11 @@ class SystemReportConfig implements ISystemReportConfig {
 
   public publicPathBase = publicPathBase
 
-  public fullReportLink(reportId: string): string {
+  public fullReportLink(reportId: string, reportToken: string): string {
     /* Not using client basePath intentionally so that it can be handled by dev server */
-    return `${publicPathBase}/api/diagnose/reports/${reportId}/detail`
+    return `${publicPathBase}/api/diagnose/reports/${reportId}/detail?token=${encodeURIComponent(
+      reportToken
+    )}`
   }
 }
 

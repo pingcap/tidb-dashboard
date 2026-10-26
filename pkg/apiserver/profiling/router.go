@@ -4,6 +4,7 @@ package profiling
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -22,14 +24,16 @@ import (
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
+const actionTokenTTL = 15 * time.Minute
+
 // Register register the handlers to the service.
 func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
 	endpoint.POST("/group/start", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.handleStartGroup)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
-	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.handleCancelGroup)
-	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
+	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.handleCancelGroup)
+	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.deleteGroup)
 
 	endpoint.GET("/action_token", auth.MWAuthRequired(), s.getActionToken)
 	endpoint.GET("/group/download", s.downloadGroup)
@@ -185,12 +189,46 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
 	action := c.Query("action") // group_download, single_download, single_view
-	token, err := utils.NewJWTString("profiling/"+action, id)
+	if err := s.validateActionTokenRequest(id, action); err != nil {
+		rest.Error(c, err)
+		return
+	}
+	token, err := utils.NewJWTStringWithExpire("profiling/"+action, id, actionTokenTTL)
 	if err != nil {
 		rest.Error(c, err)
 		return
 	}
+	c.Header("Cache-Control", "no-store")
 	c.String(http.StatusOK, token)
+}
+
+func (s *Service) validateActionTokenRequest(id, action string) error {
+	parsedID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil || parsedID == 0 {
+		return rest.ErrBadRequest.New("Invalid profiling ID")
+	}
+
+	switch action {
+	case "group_download":
+		var group TaskGroupModel
+		err = s.params.LocalStore.
+			Where("id = ? AND state IN ?", parsedID, []TaskState{TaskStateFinish, TaskStatePartialFinish}).
+			First(&group).
+			Error
+	case "single_download", "single_view":
+		var task TaskModel
+		err = s.params.LocalStore.
+			Where("id = ? AND state = ?", parsedID, TaskStateFinish).
+			First(&task).
+			Error
+	default:
+		return rest.ErrBadRequest.New("Invalid profiling action")
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return rest.ErrBadRequest.New("Profiling result is not ready")
+	}
+	return err
 }
 
 // @ID downloadProfilingGroup

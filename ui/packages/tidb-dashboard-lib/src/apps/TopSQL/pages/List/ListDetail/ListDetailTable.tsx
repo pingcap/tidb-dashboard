@@ -4,9 +4,13 @@ import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { useTranslation } from 'react-i18next'
 import { QuestionCircleOutlined } from '@ant-design/icons'
-import { CSVLink } from 'react-csv'
-
-import { Bar, TextWrap, CardTable, Card } from '@lib/components'
+import {
+  Bar,
+  TextWrap,
+  CardTable,
+  Card,
+  CSVDownloadLink
+} from '@lib/components'
 import { TopSQLContext } from '../../../context'
 import type { TopSQLSummaryPlanItem } from '../../../utils/response'
 
@@ -259,13 +263,13 @@ export function ListDetailTable({
   return (
     <>
       <Card noMarginBottom noMarginTop>
-        <CSVLink
+        <CSVDownloadLink
           data={planRecords || []}
           headers={csvHeaders}
           filename="topsql-plan"
         >
           Download to CSV
-        </CSVLink>
+        </CSVDownloadLink>
       </Card>
       <CardTable
         listProps={

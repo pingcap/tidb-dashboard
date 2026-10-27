@@ -93,6 +93,9 @@ function fieldsTimeValueColumn(
     minWidth: 150,
     maxWidth: 200,
     onRender: (rec) => {
+      if (rec.avg == null && rec.value == null) {
+        return '—'
+      }
       const tooltipContent: string[] = []
       if (rec.avg) {
         tooltipContent.push(`Mean: ${getValueFormat('ns')(rec.avg, 1)}`)

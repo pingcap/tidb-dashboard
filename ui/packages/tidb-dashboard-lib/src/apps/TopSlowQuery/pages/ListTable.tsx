@@ -2,12 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTopSlowQueryContext } from '../context'
 import { useTopSlowQueryUrlState } from '../uilts/url-state'
 import { useQuery } from '@tanstack/react-query'
-import {
-  CardTable,
-  CSVDownloadLink,
-  HighlightSQL,
-  TextWrap
-} from '@lib/components'
+import { CSVLink } from 'react-csv'
+
+import { CardTable, HighlightSQL, TextWrap } from '@lib/components'
 import {
   ColumnActionsMode,
   IColumn
@@ -250,13 +247,13 @@ export function TopSlowQueryListTable() {
   return (
     <div className={styles.slow_hint_container}>
       {slowQueries && (
-        <CSVDownloadLink
+        <CSVLink
           data={slowQueries}
           headers={csvHeaders}
           filename="top-slowquery"
         >
           Download to CSV
-        </CSVDownloadLink>
+        </CSVLink>
       )}
 
       <CardTable

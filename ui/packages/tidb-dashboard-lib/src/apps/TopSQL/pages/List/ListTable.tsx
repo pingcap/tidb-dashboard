@@ -7,6 +7,7 @@ import {
   DetailsRow
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { QuestionCircleOutlined } from '@ant-design/icons'
+import { CSVLink } from 'react-csv'
 
 import { TopsqlSummaryByItem } from '@lib/client'
 import {
@@ -17,7 +18,6 @@ import {
 import {
   Card,
   CardTable,
-  CSVDownloadLink,
   Bar,
   TextWrap,
   HighlightSQL,
@@ -326,13 +326,13 @@ export function ListTable({
       <Card noMarginBottom noMarginTop>
         <div className="ant-form-item-extra">
           {t('topsql.table.description', { topN })}{' '}
-          <CSVDownloadLink
+          <CSVLink
             data={tableRecords || []}
             headers={csvHeaders}
             filename="topsql"
           >
             Download to CSV
-          </CSVDownloadLink>
+          </CSVLink>
         </div>
       </Card>
       <CardTable

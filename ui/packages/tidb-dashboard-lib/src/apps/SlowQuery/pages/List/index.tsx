@@ -25,7 +25,6 @@ import {
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useQuery } from '@tanstack/react-query'
-import { CSVLink } from 'react-csv'
 
 import {
   Card,
@@ -36,7 +35,8 @@ import {
   toTimeRangeValue,
   IColumnKeys,
   LimitTimeRange,
-  CardTable
+  CardTable,
+  CSVDownloadLink
 } from '@lib/components'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
@@ -555,13 +555,13 @@ function List() {
                   {t('slow_query.overview.result_count', {
                     n: slowQueryData?.length
                   })}{' '}
-                  <CSVLink
-                    data={slowQueryData}
+                  <CSVDownloadLink
+                    data={slowQueryData ?? []}
                     headers={csvHeaders}
                     filename="slowquery"
                   >
                     Download to CSV
-                  </CSVLink>
+                  </CSVDownloadLink>
                 </div>
               </Card>
             )}

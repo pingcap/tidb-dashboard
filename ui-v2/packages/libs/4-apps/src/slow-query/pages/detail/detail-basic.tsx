@@ -10,6 +10,7 @@ import {
 import { useMemo } from "react"
 
 import { SlowqueryModel } from "../../models"
+import { formatPhaseBackoff } from "../../utils/phase-backoff"
 
 function getData(
   data: SlowqueryModel,
@@ -67,6 +68,25 @@ function getData(
       name: tk("fields.backoff_types"),
       value: data.backoff_types || "-",
     },
+    {
+      name: tk("fields.prewrite_backoff_types"),
+      value: formatPhaseBackoff(
+        data.prewrite_backoff_types,
+        tk("fields.phase_backoff_unavailable"),
+        tk("fields.phase_backoff_empty"),
+      ),
+      desc: tk("fields.prewrite_backoff_types.desc"),
+    },
+    {
+      name: tk("fields.commit_backoff_types"),
+      value: formatPhaseBackoff(
+        data.commit_backoff_types,
+        tk("fields.phase_backoff_unavailable"),
+        tk("fields.phase_backoff_empty"),
+      ),
+      desc: tk("fields.commit_backoff_types.desc"),
+    },
+
     {
       name: tk("fields.memory_max"),
       value: formatNumByUnit(data.memory_max || 0, "bytes"),

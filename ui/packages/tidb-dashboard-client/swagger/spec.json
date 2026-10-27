@@ -2548,6 +2548,11 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "name": "commit_backoff_types",
+                        "in": "query"
+                    },
+                    {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -2595,6 +2600,12 @@
                         "collectionFormat": "multi",
                         "description": "for showing slow queries in the statement detail page",
                         "name": "plans",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.",
+                        "name": "prewrite_backoff_types",
                         "in": "query"
                     },
                     {
@@ -5219,6 +5230,9 @@
                 "begin_time": {
                     "type": "integer"
                 },
+                "commit_backoff_types": {
+                    "type": "string"
+                },
                 "db": {
                     "type": "array",
                     "items": {
@@ -5250,6 +5264,10 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "prewrite_backoff_types": {
+                    "description": "Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.",
+                    "type": "string"
                 },
                 "resource_group": {
                     "type": "array",
@@ -5284,6 +5302,10 @@
                 },
                 "commit_backoff_time": {
                     "type": "number"
+                },
+                "commit_backoff_types": {
+                    "type": "string",
+                    "x-nullable": true
                 },
                 "commit_time": {
                     "type": "number"
@@ -5394,6 +5416,11 @@
                 "prev_stmt": {
                     "description": "Detail",
                     "type": "string"
+                },
+                "prewrite_backoff_types": {
+                    "description": "nil means the phase column is unavailable; an empty string means the reader recorded no types.",
+                    "type": "string",
+                    "x-nullable": true
                 },
                 "prewrite_region": {
                     "type": "integer"

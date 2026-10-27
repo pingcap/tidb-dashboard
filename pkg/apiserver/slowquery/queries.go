@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	apiUtils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
@@ -29,6 +30,9 @@ type GetListRequest struct {
 	Digest string   `json:"digest" form:"digest"`
 
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
+	// Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
+	PrewriteBackoffTypes *string `json:"prewrite_backoff_types" form:"prewrite_backoff_types"`
+	CommitBackoffTypes   *string `json:"commit_backoff_types" form:"commit_backoff_types"`
 }
 
 type GetDetailRequest struct {
@@ -39,9 +43,27 @@ type GetDetailRequest struct {
 }
 
 func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.DB) ([]Model, error) {
-	slowQueryColumns, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	slowQueryColumns, err := getSlowQueryColumns(sysSchema, db, requestsPhaseFields(req))
 	if err != nil {
 		return nil, err
+	}
+	results, err := querySlowLogList(req, slowQueryColumns, db)
+	// A reader may join or roll back after the probe. Only display projections may
+	// fall back; dropping an explicit filter or order would change the query.
+	if isMissingPhaseColumn(err, slowQueryColumns) && !hasPhaseCondition(req) {
+		return querySlowLogList(req, withoutPhaseColumns(slowQueryColumns), db)
+	}
+	return results, err
+}
+
+func querySlowLogList(req *GetListRequest, slowQueryColumns []string, db *gorm.DB) ([]Model, error) {
+	for _, filter := range []struct {
+		name  string
+		value *string
+	}{{"Prewrite_backoff_types", req.PrewriteBackoffTypes}, {"Commit_backoff_types", req.CommitBackoffTypes}} {
+		if filter.value != nil && !apiUtils.IsSubsetICaseInsensitive(slowQueryColumns, []string{filter.name}) {
+			return nil, ErrUnknownColumn.New("phase filter %s is unavailable on the current TiDB readers", filter.name)
+		}
 	}
 
 	reqFields := strings.Split(req.Fields, ",")
@@ -50,8 +72,14 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 		return nil, err
 	}
 
-	tx := db.
+	tx := db.Session(&gorm.Session{}).
 		Select(selectStmt)
+	if req.PrewriteBackoffTypes != nil {
+		tx = tx.Where("Prewrite_backoff_types = ?", *req.PrewriteBackoffTypes)
+	}
+	if req.CommitBackoffTypes != nil {
+		tx = tx.Where("Commit_backoff_types = ?", *req.CommitBackoffTypes)
+	}
 
 	if req.BeginTime != 0 && req.EndTime != 0 {
 		tx = tx.Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
@@ -122,16 +150,24 @@ func QuerySlowLogList(req *GetListRequest, sysSchema *utils.SysSchema, db *gorm.
 }
 
 func QuerySlowLogDetail(req *GetDetailRequest, sysSchema *utils.SysSchema, db *gorm.DB) (*Model, error) {
-	var result Model
-	slowQueryColumns, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	slowQueryColumns, err := getSlowQueryColumns(sysSchema, db, true)
 	if err != nil {
 		return nil, err
 	}
+	result, err := querySlowLogDetail(req, slowQueryColumns, db)
+	if isMissingPhaseColumn(err, slowQueryColumns) {
+		return querySlowLogDetail(req, withoutPhaseColumns(slowQueryColumns), db)
+	}
+	return result, err
+}
+
+func querySlowLogDetail(req *GetDetailRequest, slowQueryColumns []string, db *gorm.DB) (*Model, error) {
+	var result Model
 	selectStmt, err := genSelectStmt(slowQueryColumns, []string{"*"})
 	if err != nil {
 		return nil, err
 	}
-	err = db.
+	err = db.Session(&gorm.Session{}).
 		Select(selectStmt).
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
@@ -144,7 +180,7 @@ func QuerySlowLogDetail(req *GetDetailRequest, sysSchema *utils.SysSchema, db *g
 }
 
 func GetAvailableFields(sysSchema *utils.SysSchema, db *gorm.DB) ([]string, error) {
-	cs, err := sysSchema.GetTableColumnNames(db, SlowQueryTable)
+	cs, err := getSlowQueryColumns(sysSchema, db, true)
 	if err != nil {
 		return nil, err
 	}

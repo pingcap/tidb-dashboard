@@ -55,6 +55,9 @@ type Model struct {
 	Prepared        int    `gorm:"column:Prepared" json:"prepared"`
 	PlanFromCache   int    `gorm:"column:Plan_from_cache" json:"plan_from_cache"`
 	PlanFromBinding int    `gorm:"column:Plan_from_binding" json:"plan_from_binding"`
+	// nil means the phase column is unavailable; an empty string means the reader recorded no types.
+	PrewriteBackoffTypes *string `gorm:"column:Prewrite_backoff_types" json:"prewrite_backoff_types" extensions:"x-nullable"`
+	CommitBackoffTypes   *string `gorm:"column:Commit_backoff_types" json:"commit_backoff_types" extensions:"x-nullable"`
 
 	// Connection
 	User                string  `gorm:"column:User" json:"user"`

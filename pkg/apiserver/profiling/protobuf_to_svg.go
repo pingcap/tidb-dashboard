@@ -33,11 +33,9 @@ func convertProtobufToDot(content []byte, _ TaskModel) ([]byte, error) {
 		// prevent printing stdout
 		"-output", "dummy",
 		"-seconds", strconv.Itoa(int(1)),
+		// The address is required by pprof but is unused for pre-fetched proto content.
+		"",
 	}
-	// the addr is required for driver. Pporf but not used here
-	// since we have fetched proto content and just want to convert it to dot
-	address := ""
-	args = append(args, address)
 	f := &flagSet{
 		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
 		args:    args,

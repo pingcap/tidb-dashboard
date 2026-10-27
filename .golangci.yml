@@ -50,6 +50,10 @@ linters:
       - linters:
           - gosec
         text: G115
+      - linters:
+          - gosec
+        text: G705
+        path: _test\.go$
     paths:
       - swaggerspec
       - pkg/uiserver

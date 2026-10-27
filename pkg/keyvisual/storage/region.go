@@ -45,8 +45,8 @@ func CreateStorageAxis(regions region.RegionsInfo, labeler decorator.Labeler) ma
 func IntoStorageAxis(responseAxis matrix.Axis, labeler decorator.Labeler) matrix.Axis {
 	// axis := preAxis.Focus(strategy, preThreshold, len(keys)/preRatioTarget, preTarget)
 	axis := responseAxis.Divide(labeler, preTarget)
-	var storageValuesList [][]uint64
-	storageValuesList = append(storageValuesList, axis.ValuesList[1:]...)
+	storageValuesList := make([][]uint64, len(axis.ValuesList)-1)
+	copy(storageValuesList, axis.ValuesList[1:])
 	return matrix.CreateAxis(axis.Keys, storageValuesList)
 }
 

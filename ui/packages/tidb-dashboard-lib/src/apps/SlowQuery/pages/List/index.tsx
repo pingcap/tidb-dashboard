@@ -35,9 +35,9 @@ import {
   toTimeRangeValue,
   IColumnKeys,
   LimitTimeRange,
-  CardTable
+  CardTable,
+  CSVDownloadLink
 } from '@lib/components'
-import CSVDownloadLink from '@lib/components/CSVDownloadLink'
 import { useVersionedLocalStorageState } from '@lib/utils/useVersionedLocalStorageState'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { isDistro } from '@lib/utils/distro'

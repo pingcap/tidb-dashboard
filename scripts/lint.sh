@@ -10,11 +10,7 @@ PROJECT_DIR="$(dirname "$DIR")"
 cd $PROJECT_DIR
 
 LINT_BIN=./bin/golangci-lint
-<<<<<<< HEAD
-REQUIRED_VERSION=2.4.0
-=======
 REQUIRED_VERSION=2.15.0
->>>>>>> a2c7919ba (chore: update Go version to 1.27.3 (#1967))
 NEED_DOWNLOAD=true
 
 echo "+ Check golangci-lint binary"

@@ -11,11 +11,7 @@ require (
 	github.com/swaggo/swag v1.7.9
 	github.com/vektra/mockery/v2 v2.53.8
 	go.uber.org/zap v1.21.0
-<<<<<<< HEAD
-	golang.org/x/mod v0.37.0
-=======
 	golang.org/x/mod v0.41.0
->>>>>>> a2c7919ba (chore: update Go version to 1.27.3 (#1967))
 )
 
 require (
@@ -58,15 +54,6 @@ require (
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-<<<<<<< HEAD
-	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/term v0.44.0 // indirect
-	golang.org/x/text v0.39.0 // indirect
-	golang.org/x/tools v0.47.0 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
-=======
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
@@ -74,7 +61,6 @@ require (
 	golang.org/x/term v0.46.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 	golang.org/x/tools v0.51.0 // indirect
->>>>>>> a2c7919ba (chore: update Go version to 1.27.3 (#1967))
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

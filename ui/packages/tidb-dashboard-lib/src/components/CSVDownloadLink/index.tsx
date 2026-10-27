@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useLayoutEffect, useMemo, useState } from 'react'
 
 import { CSVHeader, serializeCSV } from '@lib/utils/csv'
 
@@ -14,31 +14,59 @@ export default function CSVDownloadLink({
   headers,
   filename,
   children,
+  onClick,
   ...props
 }: CSVDownloadLinkProps) {
   const csv = useMemo(() => serializeCSV(data, headers), [data, headers])
-  const url = useMemo(() => {
+  const [blobURL, setBlobURL] = useState<{ csv: string; url: string }>()
+  const filenameWithExtension = filename.endsWith('.csv')
+    ? filename
+    : `${filename}.csv`
+
+  useLayoutEffect(() => {
     if (typeof URL === 'undefined' || !URL.createObjectURL) {
-      return undefined
+      return
     }
-    return URL.createObjectURL(
+
+    const urlAPI = URL
+    const url = urlAPI.createObjectURL(
       new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' })
     )
+    setBlobURL({ csv, url })
+    return () => urlAPI.revokeObjectURL(url)
   }, [csv])
 
-  useEffect(() => {
-    return () => {
-      if (url) {
-        URL.revokeObjectURL(url)
-      }
+  const href =
+    blobURL?.csv === csv
+      ? blobURL.url
+      : typeof URL === 'undefined' || !URL.createObjectURL
+      ? `data:text/csv;charset=utf-8,${encodeURIComponent('\uFEFF' + csv)}`
+      : undefined
+
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
+    onClick?.(event)
+    if (event.defaultPrevented || typeof window === 'undefined') {
+      return
     }
-  }, [url])
+
+    const navigator = window.navigator as Navigator & {
+      msSaveBlob?: (blob: Blob, defaultName?: string) => boolean
+    }
+    if (navigator.msSaveBlob) {
+      event.preventDefault()
+      navigator.msSaveBlob(
+        new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }),
+        filenameWithExtension
+      )
+    }
+  }
 
   return (
     <a
       {...props}
-      href={url}
-      download={filename.endsWith('.csv') ? filename : `${filename}.csv`}
+      href={href}
+      download={filenameWithExtension}
+      onClick={handleClick}
     >
       {children}
     </a>

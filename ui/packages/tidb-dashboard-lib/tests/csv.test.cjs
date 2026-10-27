@@ -48,3 +48,28 @@ test('escapes multiline values and headers while retaining empty and numeric cel
     '"SQL ""text""","count","unused"\n' + '"SELECT ""x""\nFROM t","0",""'
   )
 })
+
+test('neutralizes formula-like strings without changing numbers', () => {
+  assert.equal(
+    serializeCSV(
+      [
+        {
+          query: '-- comment\nSELECT 1',
+          formula: ' =1+2',
+          variable: '@x := 1',
+          positive: '+1+2',
+          count: -2
+        }
+      ],
+      [
+        { label: 'query', key: 'query' },
+        { label: 'formula', key: 'formula' },
+        { label: 'variable', key: 'variable' },
+        { label: 'positive', key: 'positive' },
+        { label: 'count', key: 'count' }
+      ]
+    ),
+    '"query","formula","variable","positive","count"\n' +
+      '"\'-- comment\nSELECT 1","\' =1+2","\'@x := 1","\'+1+2","-2"'
+  )
+})

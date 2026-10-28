@@ -31,9 +31,9 @@ type Client struct {
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	cli := http.Client{
 		Transport: &http.Transport{
-			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
-				return conn, err
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dialer := tls.Dialer{Config: config.ClusterTLSConfig}
+				return dialer.DialContext(ctx, network, addr)
 			},
 			TLSClientConfig: config.ClusterTLSConfig,
 		},

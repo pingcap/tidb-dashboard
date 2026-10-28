@@ -49,7 +49,7 @@ func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...st
 
 func buildStringByStructField(i interface{}, buildFunc func(f reflect.StructField) (string, bool), sep string) string {
 	var t reflect.Type
-	if reflect.ValueOf(i).Kind() == reflect.Ptr {
+	if reflect.ValueOf(i).Kind() == reflect.Pointer {
 		t = reflect.TypeOf(i).Elem()
 	} else {
 		t = reflect.TypeOf(i)

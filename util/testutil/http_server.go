@@ -80,7 +80,7 @@ func (m *MultiServerHelper) CloseAll() {
 }
 
 func (m *MultiServerHelper) GetEndpoints() []string {
-	l := make([]string, 0)
+	l := make([]string, 0, len(m.Servers))
 	for _, s := range m.Servers {
 		l = append(l, GetHTTPServerHost(s))
 	}

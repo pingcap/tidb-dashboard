@@ -254,12 +254,13 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 }
 
 func (t totalTimeByLabelsTableDef) genSumarySQLs(totalTime float64, startTime, endTime string, quantiles []float64) string {
-	sqls := []string{
+	sqls := make([]string, 0, 2+len(quantiles))
+	sqls = append(sqls,
 		fmt.Sprintf("select '%[1]s','', if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s'",
 			t.name, totalTime, t.tbl, startTime, endTime),
 		fmt.Sprintf("select sum(value) from metrics_schema.%s_total_count where time >= '%s' and time < '%s'",
 			t.tbl, startTime, endTime),
-	}
+	)
 	for _, quantile := range quantiles {
 		sql := fmt.Sprintf("select max(value) as max_value from metrics_schema.%s_duration where time >= '%s' and time < '%s' and quantile=%f",
 			t.tbl, startTime, endTime, quantile)
@@ -380,12 +381,13 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 }
 
 func (t totalValueAndTotalCountTableDef) genSumarySQLs(startTime, endTime string, quantiles []float64) string {
-	sqls := []string{
+	sqls := make([]string, 0, 2+len(quantiles))
+	sqls = append(sqls,
 		fmt.Sprintf("select '%[1]s','' , sum(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s'",
 			t.name, t.sumTbl, startTime, endTime),
 		fmt.Sprintf("select sum(value) from metrics_schema.%s where time >= '%s' and time < '%s'",
 			t.countTbl, startTime, endTime),
-	}
+	)
 	for _, quantile := range quantiles {
 		sql := fmt.Sprintf("select max(value) as max_value from metrics_schema.%s where time >= '%s' and time < '%s' and quantile=%f",
 			t.tbl, startTime, endTime, quantile)

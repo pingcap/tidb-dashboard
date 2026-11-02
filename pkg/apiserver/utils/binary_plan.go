@@ -200,7 +200,7 @@ func diagnosticOperator(bp []byte) ([]byte, error) {
 	}
 
 	// ctes
-	_, err = diagnosticOperatorNodes((vp.Get(CteTrees)), newDiagnosticOperation())
+	_, err = diagnosticOperatorNodes(vp.Get(CteTrees), newDiagnosticOperation())
 	if err != nil {
 		return nil, err
 	}

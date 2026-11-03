@@ -10,14 +10,15 @@ Multiple TiKV nodes in different labels.
    vagrant up
    ```
 
-   The first run generates a private SSH key at `.vagrant/tiup_ssh_key`, unique to
-   this environment and ignored by Git. Later runs reuse it. See the
+   The first run generates a private SSH key at
+   `../.ssh-keys/multiReplica/tiup_ssh_key`, outside the guest shared folder and
+   ignored by Git. Later runs reuse it. See the
    [shared instructions](../README.md) for upgrading existing VMs.
 
 1. Use [TiUP](https://tiup.io/) to deploy the cluster to the box (only need to do it once):
 
    ```bash
-   tiup cluster deploy multiReplica v4.0.8 topology.yaml -i .vagrant/tiup_ssh_key -y --user vagrant
+   tiup cluster deploy multiReplica v4.0.8 topology.yaml -i ../.ssh-keys/multiReplica/tiup_ssh_key -y --user vagrant
    ```
 
 1. Start the cluster in the box:

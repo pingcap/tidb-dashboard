@@ -10,12 +10,40 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/joomcode/errorx"
 	"github.com/stretchr/testify/require"
 
 	"github.com/pingcap/tidb-dashboard/util/assertutil"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
+
+func TestDownloadTokenOnlyAcceptsHS256(t *testing.T) {
+	handler := New()
+	claims := &downloadTokenClaims{
+		TempFileName: "fixture", DownloadFileName: "fixture.csv",
+		StandardClaims: jwt.StandardClaims{ExpiresAt: time.Now().Add(time.Hour).Unix()}, //nolint:staticcheck // Match the existing download token format.
+	}
+	for _, method := range []jwt.SigningMethod{
+		jwt.SigningMethodHS256, jwt.SigningMethodHS384, jwt.SigningMethodHS512, jwt.SigningMethodNone,
+	} {
+		t.Run(method.Alg(), func(t *testing.T) {
+			var key interface{} = handler.secret
+			if method == jwt.SigningMethodNone {
+				key = jwt.UnsafeAllowNoneSignatureType
+			}
+			token, err := jwt.NewWithClaims(method, claims).SignedString(key)
+			require.NoError(t, err)
+			got, err := handler.parseClaimsFromToken(token)
+			if method == jwt.SigningMethodHS256 {
+				require.NoError(t, err)
+				require.Equal(t, claims, got)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
 
 func (s *Handler) mustGetDownloadToken(t *testing.T, fileContent string, downloadFileName string, expireIn time.Duration) string {
 	fw, err := s.NewFileWriter("test")

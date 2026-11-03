@@ -71,7 +71,7 @@ func (s *Handler) parseClaimsFromToken(tokenString string) (*downloadTokenClaims
 		&downloadTokenClaims{},
 		func(_ *jwt.Token) (interface{}, error) {
 			return s.secret, nil
-		})
+		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if token != nil {
 		if claims, ok := token.Claims.(*downloadTokenClaims); ok && token.Valid {
 			return claims, nil

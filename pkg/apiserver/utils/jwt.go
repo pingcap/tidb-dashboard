@@ -48,7 +48,7 @@ func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(_ *jwt.Token) (interface{}, error) {
 		return hmacSampleSecret[:], nil
-	})
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil {
 		return "", err
 	}

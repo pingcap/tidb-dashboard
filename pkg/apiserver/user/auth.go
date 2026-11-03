@@ -12,7 +12,7 @@ import (
 	"sort"
 	"time"
 
-	jwt "github.com/breeswish/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"

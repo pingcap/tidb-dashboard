@@ -268,7 +268,7 @@ func (s *distanceSplitStrategy) GenerateScaleColumnWork(ctx context.Context, ch 
 				end++
 			}
 			// task finish
-			task.WaitGroup.Done()
+			task.Done()
 		}
 	}
 }

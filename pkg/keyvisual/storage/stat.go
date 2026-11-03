@@ -122,7 +122,7 @@ func (s *layerStat) Range(startTime, endTime time.Time) (times []time.Time, axes
 		times, axes = s.Next.Range(startTime, endTime)
 	}
 
-	if s.Empty || (!(startTime.Before(s.EndTime) && endTime.After(s.StartTime))) {
+	if s.Empty || (!startTime.Before(s.EndTime) || !endTime.After(s.StartTime)) {
 		return times, axes
 	}
 

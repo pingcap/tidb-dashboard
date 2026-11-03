@@ -411,7 +411,8 @@ func (s *Service) viewSingle(c *gin.Context) {
 	// set default content-type for legacy profiling content.
 	contentType := "image/svg+xml"
 
-	if task.RawDataType == RawDataTypeProtobuf {
+	switch task.RawDataType {
+	case RawDataTypeProtobuf:
 		switch outputType {
 		case string(ViewOutputTypeGraph):
 			svgContent, err := convertProtobufToSVG(content, task)
@@ -428,7 +429,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			rest.Error(c, rest.ErrBadRequest.New("Cannot output protobuf as %s", outputType))
 			return
 		}
-	} else if task.RawDataType == RawDataTypeJeprof {
+	case RawDataTypeJeprof:
 		// call jeprof to convert svg
 		switch outputType {
 		case string(ViewOutputTypeGraph):
@@ -462,7 +463,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 			rest.Error(c, rest.ErrBadRequest.New("Cannot output jeprof raw data as %s", outputType))
 			return
 		}
-	} else if task.RawDataType == RawDataTypeText {
+	case RawDataTypeText:
 		switch outputType {
 		case string(ViewOutputTypeText):
 			contentType = "text/plain"

@@ -19,6 +19,10 @@ import (
 )
 
 const (
+	// Statement summaries normally cap encoded plans at 1 MiB. Leave ample room
+	// for decompression and larger slow-query plans without trusting a length header.
+	maxDecodedBinaryPlanSize = 64 << 20
+
 	MainTree                = "main"
 	CteTrees                = "ctes"
 	Children                = "children"
@@ -132,6 +136,15 @@ func GenerateBinaryPlan(v string) (*tipb.ExplainData, error) {
 	compressVPBytes, err := base64.StdEncoding.DecodeString(v)
 	if err != nil {
 		return nil, err
+	}
+
+	// Decode allocates the length declared in the header before checking the body.
+	decodedLen, err := snappy.DecodedLen(compressVPBytes)
+	if err != nil {
+		return nil, err
+	}
+	if decodedLen > maxDecodedBinaryPlanSize {
+		return nil, fmt.Errorf("decoded binary plan exceeds %d bytes", maxDecodedBinaryPlanSize)
 	}
 
 	// snappy uncompress

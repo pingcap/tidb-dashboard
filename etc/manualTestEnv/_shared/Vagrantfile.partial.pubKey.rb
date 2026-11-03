@@ -27,6 +27,26 @@ def configure_dashboard_test_environment(environment_dir)
     previous_key = previous_pub_key.split[1]
   end
 
+  authorized_keys_filter = <<~'AWK'
+    function key_blob(line, fields) {
+      sub(/^[ \t]+/, "", line)
+      if (line ~ /^#/) return ""
+      split(line, fields, /[ \t]+/)
+      if (fields[1] !~ /^(ssh-|ecdsa-|sk-)/) {
+        # Skip one options field, including quoted spaces and escaped quotes.
+        if (!match(line, /^([^ \t"\\]|\\.|"([^"\\]|\\.)*")+[ \t]+/)) return ""
+        line = substr(line, RLENGTH + 1)
+        split(line, fields, /[ \t]+/)
+      }
+      if (fields[1] ~ /^(ssh-|ecdsa-|sk-)/) return fields[2]
+      return ""
+    }
+    {
+      blob = key_blob($0)
+      if (blob != legacy && blob != current && (previous == "" || blob != previous)) print
+    }
+  AWK
+
   Vagrant.configure("2") do |config|
     config.vm.box = "hashicorp/bionic64"
     config.vm.provision "zsh", type: "shell", privileged: false, inline: <<-SHELL
@@ -47,7 +67,7 @@ def configure_dashboard_test_environment(environment_dir)
       trap 'rm -f "$authorized_keys_tmp"' EXIT
       awk -v legacy=#{legacy_key.shellescape} -v current=#{ssh_pub_key.split[1].shellescape} \\
         -v previous=#{previous_key.shellescape} \\
-        '$2 != legacy && $2 != current && (previous == "" || $2 != previous)' "$authorized_keys" > "$authorized_keys_tmp"
+        '#{authorized_keys_filter}' "$authorized_keys" > "$authorized_keys_tmp"
       printf '%s\\n' #{ssh_pub_key.shellescape} >> "$authorized_keys_tmp"
       chmod 600 "$authorized_keys_tmp"
       mv "$authorized_keys_tmp" "$authorized_keys"

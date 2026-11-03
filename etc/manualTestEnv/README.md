@@ -47,6 +47,12 @@ generates a new identity on the next Vagrant command, and existing guests must
 be reprovisioned to authorize that identity. Do not copy an exposed private key
 into the new path.
 
+Before replacing a host-only key, retain its public key and remove that identity
+from every guest's `authorized_keys`, including entries with authorization
+options. Reprovisioning adds the replacement key but cannot identify a deleted
+host-only key to revoke. Vagrant's own SSH connection remains available for this
+cleanup.
+
 Destroy disposable environments using their individual cleanup instructions.
 Treat the legacy private key as permanently public even though it has been
 removed from the current tree.

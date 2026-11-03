@@ -4,13 +4,12 @@ import client from '~/client'
 import { AuthTypes, setAuthToken } from './auth'
 
 function newRandomString(length: number) {
-  let text = ''
-  const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  for (let i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length))
-  }
-  return text
+  const bytes = new Uint8Array(Math.ceil(length / 2))
+  window.crypto.getRandomValues(bytes)
+  // Hex is PKCE-compatible and preserves the existing parameter lengths.
+  return Array.from(bytes, (byte) => ('0' + byte.toString(16)).slice(-2))
+    .join('')
+    .slice(0, length)
 }
 
 function getBaseURL() {
@@ -40,9 +39,18 @@ export function isSSOCallback() {
 
 async function handleSSOCallbackInner() {
   const p = new URLSearchParams(window.location.search)
-  if (p.get('state') !== sessionStorage.getItem('sso.state')) {
+  const state = p.get('state')
+  const expectedState = sessionStorage.getItem('sso.state')
+  const code = p.get('code')
+  const codeVerifier = sessionStorage.getItem('sso.codeVerifier')
+  if (!state || !expectedState || state !== expectedState) {
     throw new Error(
       'Invalid OIDC state: You may see this error when your SSO sign in is outdated.'
+    )
+  }
+  if (!code || !codeVerifier) {
+    throw new Error(
+      'Invalid OIDC callback: Missing authorization code or PKCE verifier. Please sign in again.'
     )
   }
   const r = await client.getInstance().userLogin(
@@ -50,8 +58,8 @@ async function handleSSOCallbackInner() {
       message: {
         type: AuthTypes.SSO,
         extra: JSON.stringify({
-          code: p.get('code'),
-          code_verifier: sessionStorage.getItem('sso.codeVerifier'),
+          code,
+          code_verifier: codeVerifier,
           redirect_url: getRedirectURL()
         })
       }

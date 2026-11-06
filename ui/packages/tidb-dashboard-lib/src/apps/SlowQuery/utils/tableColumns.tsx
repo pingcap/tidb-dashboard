@@ -1,4 +1,6 @@
 import { Badge, Tooltip } from 'antd'
+import i18next from 'i18next'
+import { formatPhaseBackoff } from './phaseBackoff'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -88,6 +90,35 @@ export function slowQueryColumns(
     tcf.textWithTooltip('index_names', rows),
     tcf.textWithTooltip('stats', rows),
     tcf.textWithTooltip('backoff_types', rows),
+    tcf.textWithTooltip('prewrite_backoff_types', rows).patchConfig({
+      onRender: (rec: SlowqueryModel) => {
+        const text = formatPhaseBackoff(
+          rec.prewrite_backoff_types,
+          i18next.t('slow_query.fields.phase_backoff_unavailable'),
+          i18next.t('slow_query.fields.phase_backoff_empty')
+        )
+        return (
+          <Tooltip title={text}>
+            <TextWrap>{text}</TextWrap>
+          </Tooltip>
+        )
+      }
+    }),
+    tcf.textWithTooltip('commit_backoff_types', rows).patchConfig({
+      onRender: (rec: SlowqueryModel) => {
+        const text = formatPhaseBackoff(
+          rec.commit_backoff_types,
+          i18next.t('slow_query.fields.phase_backoff_unavailable'),
+          i18next.t('slow_query.fields.phase_backoff_empty')
+        )
+        return (
+          <Tooltip title={text}>
+            <TextWrap>{text}</TextWrap>
+          </Tooltip>
+        )
+      }
+    }),
+
     // connection
     tcf.textWithTooltip('user', rows),
     tcf.textWithTooltip('host', rows),

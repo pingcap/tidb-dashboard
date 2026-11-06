@@ -2961,6 +2961,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
+         * @param {string} [commitBackoffTypes] 
          * @param {Array<string>} [db] 
          * @param {boolean} [desc] 
          * @param {string} [digest] 
@@ -2969,12 +2970,13 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {string} [prewriteBackoffTypes] Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
          * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        slowQueryListGet: async (beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        slowQueryListGet: async (beginTime?: number, commitBackoffTypes?: string, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, prewriteBackoffTypes?: string, resourceGroup?: Array<string>, text?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/slow_query/list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2992,6 +2994,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (beginTime !== undefined) {
                 localVarQueryParameter['begin_time'] = beginTime;
+            }
+
+            if (commitBackoffTypes !== undefined) {
+                localVarQueryParameter['commit_backoff_types'] = commitBackoffTypes;
             }
 
             if (db) {
@@ -3024,6 +3030,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (plans) {
                 localVarQueryParameter['plans'] = plans;
+            }
+
+            if (prewriteBackoffTypes !== undefined) {
+                localVarQueryParameter['prewrite_backoff_types'] = prewriteBackoffTypes;
             }
 
             if (resourceGroup) {
@@ -5148,6 +5158,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
+         * @param {string} [commitBackoffTypes] 
          * @param {Array<string>} [db] 
          * @param {boolean} [desc] 
          * @param {string} [digest] 
@@ -5156,13 +5167,14 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {string} [prewriteBackoffTypes] Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
          * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SlowqueryModel>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, resourceGroup, text, options);
+        async slowQueryListGet(beginTime?: number, commitBackoffTypes?: string, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, prewriteBackoffTypes?: string, resourceGroup?: Array<string>, text?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SlowqueryModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.slowQueryListGet(beginTime, commitBackoffTypes, db, desc, digest, endTime, fields, limit, orderBy, plans, prewriteBackoffTypes, resourceGroup, text, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6274,6 +6286,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * 
          * @summary List all slow queries
          * @param {number} [beginTime] 
+         * @param {string} [commitBackoffTypes] 
          * @param {Array<string>} [db] 
          * @param {boolean} [desc] 
          * @param {string} [digest] 
@@ -6282,13 +6295,14 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [limit] 
          * @param {string} [orderBy] 
          * @param {Array<string>} [plans] for showing slow queries in the statement detail page
+         * @param {string} [prewriteBackoffTypes] Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
          * @param {Array<string>} [resourceGroup] 
          * @param {string} [text] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        slowQueryListGet(beginTime?: number, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, resourceGroup?: Array<string>, text?: string, options?: any): AxiosPromise<Array<SlowqueryModel>> {
-            return localVarFp.slowQueryListGet(beginTime, db, desc, digest, endTime, fields, limit, orderBy, plans, resourceGroup, text, options).then((request) => request(axios, basePath));
+        slowQueryListGet(beginTime?: number, commitBackoffTypes?: string, db?: Array<string>, desc?: boolean, digest?: string, endTime?: number, fields?: string, limit?: number, orderBy?: string, plans?: Array<string>, prewriteBackoffTypes?: string, resourceGroup?: Array<string>, text?: string, options?: any): AxiosPromise<Array<SlowqueryModel>> {
+            return localVarFp.slowQueryListGet(beginTime, commitBackoffTypes, db, desc, digest, endTime, fields, limit, orderBy, plans, prewriteBackoffTypes, resourceGroup, text, options).then((request) => request(axios, basePath));
         },
         /**
          * Start a profiling task group
@@ -7371,6 +7385,13 @@ export interface DefaultApiSlowQueryListGetRequest {
 
     /**
      * 
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly commitBackoffTypes?: string
+
+    /**
+     * 
      * @type {Array<string>}
      * @memberof DefaultApiSlowQueryListGet
      */
@@ -7424,6 +7445,13 @@ export interface DefaultApiSlowQueryListGetRequest {
      * @memberof DefaultApiSlowQueryListGet
      */
     readonly plans?: Array<string>
+
+    /**
+     * Exact phase-list filters. A pointer distinguishes an omitted filter from matching an empty string.
+     * @type {string}
+     * @memberof DefaultApiSlowQueryListGet
+     */
+    readonly prewriteBackoffTypes?: string
 
     /**
      * 
@@ -8822,7 +8850,7 @@ export class DefaultApi extends BaseAPI {
      * @memberof DefaultApi
      */
     public slowQueryListGet(requestParameters: DefaultApiSlowQueryListGetRequest = {}, options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).slowQueryListGet(requestParameters.beginTime, requestParameters.db, requestParameters.desc, requestParameters.digest, requestParameters.endTime, requestParameters.fields, requestParameters.limit, requestParameters.orderBy, requestParameters.plans, requestParameters.resourceGroup, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
+        return DefaultApiFp(this.configuration).slowQueryListGet(requestParameters.beginTime, requestParameters.commitBackoffTypes, requestParameters.db, requestParameters.desc, requestParameters.digest, requestParameters.endTime, requestParameters.fields, requestParameters.limit, requestParameters.orderBy, requestParameters.plans, requestParameters.prewriteBackoffTypes, requestParameters.resourceGroup, requestParameters.text, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

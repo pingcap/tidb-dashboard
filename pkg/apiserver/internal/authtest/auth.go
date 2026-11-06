@@ -42,7 +42,11 @@ func Token(t *testing.T, auth *user.AuthService, session utils.SessionUser) stri
 	session.Version = utils.SessionVersion
 	extra, err := json.Marshal(session)
 	require.NoError(t, err)
-	body, err := json.Marshal(user.AuthenticateForm{Type: session.AuthFrom, Extra: string(extra)})
+	// The test authenticator only needs the identity type and synthetic session.
+	body, err := json.Marshal(struct {
+		Type  utils.AuthType `json:"type"`
+		Extra string         `json:"extra"`
+	}{Type: session.AuthFrom, Extra: string(extra)})
 	require.NoError(t, err)
 	engine := gin.New()
 	engine.Use(rest.ErrorHandlerFn())

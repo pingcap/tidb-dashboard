@@ -37,8 +37,32 @@ func TestVerifySQLUserRejectsDisabledGrantTables(t *testing.T) {
 	writeable, err := verifySQLUser(client, "root", "")
 	require.Error(t, err)
 	require.True(t, errorx.IsOfType(err, ErrInsufficientPrivs))
+	_, authenticated := errorx.ExtractProperty(err, SQLUserAuthenticated)
+	require.False(t, authenticated)
 	require.False(t, writeable)
 	require.Zero(t, client.openCalls, "maintenance mode must not authenticate or grant a session")
+}
+
+func TestVerifySQLUserMarksAuthenticatedPrivilegeFailure(t *testing.T) {
+	for _, config := range []string{
+		`{"security":{"skip-grant-table":false}}`,
+		`{"security":{"skip-grant-table":false,"enable-sem":true}}`,
+	} {
+		db := testutil.OpenMockDB(t)
+		db.Mocker().ExpectQuery("show grants for current_user()").
+			WillReturnRows(sqlmock.NewRows([]string{"Grants"}).AddRow("GRANT USAGE ON *.* TO 'app'@'%'"))
+		db.Mocker().ExpectClose()
+		client := &sqlUserTestClient{config: config, db: db.Gorm()}
+		writeable, err := verifySQLUser(client, "app", "valid-password")
+		require.False(t, writeable)
+		require.Equal(t, 1, client.openCalls)
+		require.True(t, errorx.IsOfType(err, ErrInsufficientPrivs))
+		authenticated, ok := errorx.ExtractProperty(err, SQLUserAuthenticated)
+		require.True(t, ok)
+		require.Equal(t, true, authenticated)
+		require.Equal(t, ErrInsufficientPrivs.FullName(), errorx.Cast(err).Type().FullName())
+		db.MustMeetMockExpectation()
+	}
 }
 
 func TestVerifySQLUserPreservesNormalPrivileges(t *testing.T) {

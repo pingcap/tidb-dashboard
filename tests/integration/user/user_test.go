@@ -135,7 +135,7 @@ func (s *testUserSuite) TestLoginWithInsufficientPrivs() {
 	c, w := util.TestReqWithHandlers(req, s.authService.LoginHandler)
 
 	s.Require().Contains(c.Errors.Last().Err.Error(), "authenticate failed")
-	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, user.ErrInsufficientPrivs))
+	s.Require().True(errorx.IsOfType(c.Errors.Last().Err, tidb.ErrTiDBAuthFailed))
 	s.Require().Equal(401, c.Writer.Status())
 	s.Require().Equal(401, w.Code)
 }

@@ -65,6 +65,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
+		auth.MWRequireWritePriv(),
 		utils.MWConnectTiDB(s.tidbClient),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/action_token",
@@ -76,11 +77,12 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		s.reportStatusHandler)
 
-	endpoint.POST("/metrics_relation/generate", auth.MWAuthRequired(), s.metricsRelationHandler)
+	endpoint.POST("/metrics_relation/generate", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.metricsRelationHandler)
 	endpoint.GET("/metrics_relation/view", s.metricsRelationViewHandler)
 
 	endpoint.POST("/diagnosis",
 		auth.MWAuthRequired(),
+		auth.MWRequireWritePriv(),
 		utils.MWConnectTiDB(s.tidbClient),
 		s.genDiagnosisHandler)
 }

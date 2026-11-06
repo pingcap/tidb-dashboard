@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/joomcode/errorx"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
@@ -14,6 +15,11 @@ import (
 )
 
 var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
+
+// SQLUserAuthenticated marks errors raised after SQL authentication succeeded.
+// The boolean property lets SQL login hide privilege failures without changing
+// maintenance-mode errors or the errors consumed by SSO impersonation.
+var SQLUserAuthenticated = errorx.RegisterProperty("sql_user_authenticated")
 
 // TiDB config response
 //
@@ -73,7 +79,7 @@ func verifySQLUser(tidbClient sqlUserClient, userName, password string) (bool, e
 	grants := parseUserGrants(grantRows)
 	// 4. Check grants
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
-		return false, ErrInsufficientPrivs.NewWithNoMessage()
+		return false, ErrInsufficientPrivs.NewWithNoMessage().WithProperty(SQLUserAuthenticated, true)
 	}
 
 	return checkWriteablePriv(grants), nil

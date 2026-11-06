@@ -1,9 +1,9 @@
 import React from 'react'
-import { SlowqueryModel } from '@lib/client'
 import { Typography } from 'antd'
 import { TFunction } from 'react-i18next'
+import { SlowQueryTimingModel } from '../../utils/timings'
 
-export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
+export const tabTimeItems = (data: SlowQueryTimingModel, t: TFunction) => {
   return [
     {
       key: 'query_time2',
@@ -70,6 +70,18 @@ export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
       value: data.resolve_lock_time! * 10e8,
       indentLevel: 1
     },
+    ...('read_resolve_lock_rpc_time' in data
+      ? [
+          {
+            key: 'read_resolve_lock_rpc_time',
+            value:
+              data.read_resolve_lock_rpc_time == null
+                ? undefined
+                : data.read_resolve_lock_rpc_time * 10e8,
+            indentLevel: 1
+          }
+        ]
+      : []),
     {
       key: 'wait_ts',
       value: data.wait_ts! * 10e8,
@@ -95,6 +107,18 @@ export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
       value: data.backoff_time! * 10e8,
       indentLevel: 1
     },
+    ...('backoff_total' in data
+      ? [
+          {
+            key: 'backoff_total',
+            value:
+              data.backoff_total == null
+                ? undefined
+                : data.backoff_total * 10e8,
+            indentLevel: 1
+          }
+        ]
+      : []),
     {
       key: 'commit_backoff_time',
       value: data.commit_backoff_time! * 10e8,

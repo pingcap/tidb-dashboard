@@ -70,14 +70,18 @@ slow_query:
     process_time_tooltip: '{{distro.tikv}} 执行 Coprocessor 任务的累计处理时间（注：{{distro.tikv}} 会并行处理任务，因此该时间不是自然流逝时间）'
     lock_keys_time: 上锁耗时
     lock_keys_time_tooltip: 悲观事务中对相关行数据进行上锁的耗时
+    backoff_total: 累计 Backoff 耗时
+    backoff_total_tooltip: 语句上下文中已记录请求的累计 Backoff 睡眠耗时，与 Backoff Time 和 Commit Backoff Time 重叠，不能相加；并行累计值可能超过 SQL 总耗时，0 不代表未发生 Backoff。
+    read_resolve_lock_rpc_time: 读取 ResolveLock 耗时
+    read_resolve_lock_rpc_time_tooltip: '读取路径中已记录的同步 ResolveLocks 调用累计耗时，包含调用内的状态检查和重试，不包含调用返回后的锁等待 Backoff。并行累计值可能超过 SQL 总耗时；统计不可用时显示 —。'
     backoff_time: 执行阶段累计 Backoff 耗时
-    backoff_time_tooltip: 在执行失败时，Backoff 机制等待一段时间再重试时的 Backoff 累计耗时（注：可能同时存在多个 Backoff，因此该时间可能不是自然流逝时间）
+    backoff_time_tooltip: Coprocessor 任务的累计 Backoff 睡眠耗时，不包含 Point_Get 或事务提交阶段的 Backoff；并行累计值可能超过 SQL 总耗时。
     get_commit_ts_time: 取事务 Commit Ts 耗时
     get_commit_ts_time_tooltip: 从 {{distro.pd}} 取提交时间戳（事务号）步骤的耗时
     local_latch_wait_time: '{{distro.tidb}} 本地等锁耗时'
     local_latch_wait_time_tooltip: 事务在 {{distro.tidb}} 本地与其他事务产生了锁冲突并等待的耗时
-    resolve_lock_time: 解锁耗时
-    resolve_lock_time_tooltip: 事务在提交过程中与其他事务产生了锁冲突并处理锁冲突的耗时
+    resolve_lock_time: 提交 ResolveLock 耗时
+    resolve_lock_time_tooltip: '事务提交流程（含 Prewrite）中 ResolveLocks 调用的累计耗时，包含调用内的状态检查和重试，不包含调用返回后的锁等待 Backoff。'
     prewrite_time: Prewrite 阶段耗时
     prewrite_time_tooltip: 事务两阶段提交中第一阶段（prewrite 阶段）的耗时
     wait_prewrite_binlog_time: Binlog Prewrite 等待耗时

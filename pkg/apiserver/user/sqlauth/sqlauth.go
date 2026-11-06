@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -55,7 +56,14 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	// that the legacy RSA primitive or its SQL backend runs in constant time.
 	writeable, err := a.verifySQLUser(f.Username, plainPwd)
 	if err != nil {
-		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+		authenticated, _ := errorx.ExtractProperty(err, user.SQLUserAuthenticated)
+		privilegeDenied := authenticated == true && errorx.IsOfType(err, user.ErrInsufficientPrivs)
+		if privilegeDenied {
+			log.Info("SQL login rejected: insufficient Dashboard privileges")
+		}
+		if privilegeDenied || errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+			// Do not expose whether a rejected SQL credential was valid. Start a
+			// fresh error so neither its message nor its cause reveals the reason.
 			return nil, tidb.ErrTiDBAuthFailed.NewWithNoMessage()
 		}
 		if errorx.Cast(err) == nil {

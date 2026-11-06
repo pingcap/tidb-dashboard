@@ -22,6 +22,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
@@ -166,7 +167,12 @@ func TestAuthenticatePreservesActionableErrors(t *testing.T) {
 	r := gin.New()
 	r.Use(rest.ErrorHandlerFn())
 	r.POST("/login", service.LoginHandler)
-	for _, backendErr := range []error{user.ErrInsufficientPrivs.NewWithNoMessage(), tidb.ErrNoAliveTiDB.NewWithNoMessage()} {
+	for _, backendErr := range []error{
+		user.ErrInsufficientPrivs.New("Dashboard access requires TiDB grant tables to be enabled"),
+		tidb.ErrNoAliveTiDB.NewWithNoMessage(),
+		pd.ErrPDClientRequestFailed.NewWithNoMessage(),
+		tidb.ErrTiDBConnFailed.NewWithNoMessage(),
+	} {
 		a.verifySQLUser = func(_, _ string) (bool, error) { return false, backendErr }
 		var firstBody string
 		var firstStatus int

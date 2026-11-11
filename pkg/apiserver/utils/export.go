@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
+	"github.com/minio/sio"
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -89,7 +89,10 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 		_ = csvwriter.WriteAll(data)
 		_ = pw.Close()
 	}()
-	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
+	// Authenticate each chunk before it can be returned by DownloadByToken.
+	// Export files and their download tokens are local to this server process.
+	_, err = sio.Encrypt(csvFile, pr, sio.Config{Key: secretKey[:]})
+	_ = pr.CloseWithError(err)
 	if err != nil {
 		return
 	}
@@ -117,6 +120,10 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 		rest.Error(c, rest.ErrBadRequest.WrapWithNoMessage(err))
 		return
 	}
+	if len(secretKey) != 32 {
+		rest.Error(c, rest.ErrBadRequest.New("invalid token"))
+		return
+	}
 
 	filePath := arr[1]
 	fileInfo, err := os.Stat(filePath)
@@ -132,9 +139,14 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 
 	c.Writer.Header().Set("Content-type", "text/csv")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileInfo.Name()))
-	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
+	_, err = sio.Decrypt(c.Writer, f, sio.Config{Key: secretKey})
 	if err != nil {
 		log.Error("decrypt csv failed", zap.Error(err))
+		if !c.Writer.Written() {
+			c.Writer.Header().Del("Content-Type")
+			c.Writer.Header().Del("Content-Disposition")
+			rest.Error(c, rest.ErrBadRequest.New("invalid export file"))
+		}
 	}
 	// delete it anyway
 	_ = f.Close()

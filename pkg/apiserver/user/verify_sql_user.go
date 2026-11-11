@@ -7,11 +7,19 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/joomcode/errorx"
+	"gorm.io/gorm"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
 
 var ErrInsufficientPrivs = ErrNSSignIn.NewType("insufficient_priv")
+
+// SQLUserAuthenticated marks errors raised after SQL authentication succeeded.
+// The boolean property lets SQL login hide privilege failures without changing
+// maintenance-mode errors or the errors consumed by SSO impersonation.
+var SQLUserAuthenticated = errorx.RegisterProperty("sql_user_authenticated")
 
 // TiDB config response
 //
@@ -30,12 +38,15 @@ type tidbSEMConfig struct {
 }
 
 func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeable bool, err error) {
-	db, err := tidbClient.OpenSQLConn(userName, password)
-	if err != nil {
-		return false, err
-	}
-	defer utils.CloseTiDBConnection(db) //nolint:errcheck
+	return verifySQLUser(tidbClient, userName, password)
+}
 
+type sqlUserClient interface {
+	OpenSQLConn(string, string) (*gorm.DB, error)
+	SendGetRequest(string) ([]byte, error)
+}
+
+func verifySQLUser(tidbClient sqlUserClient, userName, password string) (bool, error) {
 	// Check dashboard privileges
 	// 1. Get TiDB config
 	resData, err := tidbClient.SendGetRequest("/config")
@@ -48,11 +59,17 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 		return false, err
 	}
 	// 2. Check SkipGrantTable
-	// Note: Currently, if TiDB enable the skip-grant-table, running `show grants` will get error.
-	// So this is a workaround before the above bug is fixed.
 	if config.Security.SkipGrantTable {
-		return true, nil
+		// Maintenance mode cannot authenticate an identity or establish privileges.
+		// Do not mint a session that would outlive the maintenance window.
+		return false, ErrInsufficientPrivs.New("Dashboard access requires TiDB grant tables to be enabled")
 	}
+	db, err := tidbClient.OpenSQLConn(userName, password)
+	if err != nil {
+		return false, err
+	}
+	defer utils.CloseTiDBConnection(db) //nolint:errcheck
+
 	// 3. Get grants
 	var grantRows []string
 	err = db.Raw("show grants for current_user()").Find(&grantRows).Error
@@ -62,7 +79,7 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeabl
 	grants := parseUserGrants(grantRows)
 	// 4. Check grants
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
-		return false, ErrInsufficientPrivs.NewWithNoMessage()
+		return false, ErrInsufficientPrivs.NewWithNoMessage().WithProperty(SQLUserAuthenticated, true)
 	}
 
 	return checkWriteablePriv(grants), nil

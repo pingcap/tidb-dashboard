@@ -1,4 +1,5 @@
 load "#{File.dirname(__FILE__)}/../_shared/Vagrantfile.partial.pubKey.rb"
+configure_dashboard_test_environment(__dir__)
 
 Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|

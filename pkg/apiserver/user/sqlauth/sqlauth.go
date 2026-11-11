@@ -3,7 +3,11 @@
 package sqlauth
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -15,13 +19,15 @@ const typeID = utils.AuthTypeSQL
 
 type Authenticator struct {
 	user.BaseAuthenticator
-	tidbClient  *tidb.Client
-	authService *user.AuthService
+	authService   *user.AuthService
+	verifySQLUser func(string, string) (bool, error)
 }
 
 func NewAuthenticator(tidbClient *tidb.Client) *Authenticator {
 	return &Authenticator{
-		tidbClient: tidbClient,
+		verifySQLUser: func(name, password string) (bool, error) {
+			return user.VerifySQLUser(tidbClient, name, password)
+		},
 	}
 }
 
@@ -36,15 +42,32 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	plainPwd, err := user.Decrypt(f.Password, a.authService.RsaPrivateKey)
-	if err != nil {
-		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
+	var fallback [32]byte
+	if _, err := rand.Read(fallback[:]); err != nil {
+		return nil, user.ErrSignInOther.NewWithNoMessage()
+	}
+	plainPwd, decryptErr := user.Decrypt(f.Password, a.authService.RsaPrivateKey)
+	if decryptErr != nil {
+		plainPwd = base64.RawURLEncoding.EncodeToString(fallback[:])
 	}
 
-	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, plainPwd)
+	// Keep legacy ciphertexts compatible, but do not reveal padding validity via
+	// a different error or by skipping SQL authentication. This is not a claim
+	// that the legacy RSA primitive or its SQL backend runs in constant time.
+	writeable, err := a.verifySQLUser(f.Username, plainPwd)
 	if err != nil {
+		authenticated, _ := errorx.ExtractProperty(err, user.SQLUserAuthenticated)
+		privilegeDenied := authenticated == true && errorx.IsOfType(err, user.ErrInsufficientPrivs)
+		if privilegeDenied {
+			log.Info("SQL login rejected: insufficient Dashboard privileges")
+		}
+		if privilegeDenied || errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+			// Do not expose whether a rejected SQL credential was valid. Start a
+			// fresh error so neither its message nor its cause reveals the reason.
+			return nil, tidb.ErrTiDBAuthFailed.NewWithNoMessage()
+		}
 		if errorx.Cast(err) == nil {
-			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
+			return nil, user.ErrSignInOther.NewWithNoMessage()
 		}
 		// Possible errors could be:
 		// tidb.ErrNoAliveTiDB
@@ -53,6 +76,10 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		// tidb.ErrTiDBAuthFailed
 		// user.ErrInsufficientPrivs
 		return nil, err
+	}
+	// Never accept replacement credentials, even if the backend accepted them.
+	if decryptErr != nil {
+		return nil, tidb.ErrTiDBAuthFailed.NewWithNoMessage()
 	}
 
 	return &utils.SessionUser{

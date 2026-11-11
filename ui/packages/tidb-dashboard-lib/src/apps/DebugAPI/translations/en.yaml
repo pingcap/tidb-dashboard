@@ -17,8 +17,6 @@ debug_api:
     name: '{{distro.tidb}}'
     endpoints:
       tidb_stats_by_table: Statistics Data - of a Table
-      tidb_stats_by_table_timestamp: Statistics Data - of a Table and Timestamp
-      tidb_stats_by_table_timestamp_desc: The timestamp needs to be set within the GC safe point
       tidb_settings: Current Config
       tidb_schema: Schema Information - All / by TableID
       tidb_schema_by_db: Schema Information - by Database
@@ -33,6 +31,11 @@ debug_api:
       tidb_hot_regions: Region - Hot
       tidb_pprof: pprof
       tidb_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
+
+      # Old tidb-dashboard backends still list this endpoint. TiDB removed its route
+      # with the historical stats feature in https://github.com/pingcap/tidb/pull/69889.
+      tidb_stats_by_table_timestamp: Statistics Data - of a Table and Timestamp
+      tidb_stats_by_table_timestamp_desc: The timestamp needs to be set within the GC safe point
 
       # for old tidb-dashboard backend api before 5.4.0
       # get back from https://github.com/pingcap/tidb-dashboard/pull/1103/files#diff-fc455ec052d6f881db40d33377d3a6cd757100b476f10eb68ca5e72696e8a463L23

@@ -52,17 +52,6 @@ var apiEndpoints = []endpoint.APIDefinition{
 		},
 	},
 	{
-		ID:        "tidb_stats_by_table_timestamp",
-		Component: topo.KindTiDB,
-		Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
-		Method:    resty.MethodGet,
-		PathParams: []endpoint.APIParamDefinition{
-			endpoint.APIParamDBName("db", true),
-			endpoint.APIParamTableName("table", true),
-			endpoint.APIParamText("yyyyMMddHHmmss", true),
-		},
-	},
-	{
 		ID:        "tidb_settings",
 		Component: topo.KindTiDB,
 		Path:      "/settings",

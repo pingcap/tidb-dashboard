@@ -77,6 +77,28 @@ func TestNormalizeRefreshHistoryRequest(t *testing.T) {
 		}
 	})
 
+	t.Run("accepts current and legacy refresh methods", func(t *testing.T) {
+		for _, mode := range []string{"fast", "bounded fast", "complete in place", "complete out of place", "complete delta apply", "complete"} {
+			for _, origin := range []string{"auto", "manual"} {
+				method := mode + " " + origin
+				t.Run(method, func(t *testing.T) {
+					req := &RefreshHistoryRequest{
+						BeginTime:     1710000000,
+						EndTime:       1710003600,
+						Schema:        []string{"test"},
+						RefreshMethod: []string{strings.ToUpper(method), " " + method + " "},
+					}
+					if err := normalizeRefreshHistoryRequest(req); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					if len(req.RefreshMethod) != 1 || req.RefreshMethod[0] != method {
+						t.Fatalf("unexpected refresh methods: %#v", req.RefreshMethod)
+					}
+				})
+			}
+		}
+	})
+
 	t.Run("normalizes schemas", func(t *testing.T) {
 		req := &RefreshHistoryRequest{
 			BeginTime: 1710000000,
@@ -453,5 +475,50 @@ func TestBuildRefreshAlertQueriesUsePR71589Columns(t *testing.T) {
 		if !strings.Contains(query, column) {
 			t.Fatalf("alert query is missing %q: %s", column, query)
 		}
+	}
+}
+
+func TestQueryRefreshAlertPreservesRefreshFailed(t *testing.T) {
+	sqlDB, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to create mock database: %v", err)
+	}
+	defer sqlDB.Close()
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      sqlDB,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to create gorm database: %v", err)
+	}
+
+	req := &RefreshAlertRequest{Schema: []string{"test"}}
+	if err := normalizeRefreshAlertRequest(req); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	mock.ExpectQuery(`SELECT count\(\*\) FROM .*tidb_mview_refresh_alert`).
+		WithArgs("test").
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
+	// TiDB stores a string marker for failures and NULL for alerts without a failure.
+	rows := sqlmock.NewRows([]string{"schema", "materialized_view", "materialized_view_id", "last_success_time", "alert_type", "refresh_failed", "update_time"}).
+		AddRow("test", "failed_mv", "1", nil, nil, "YES", nil).
+		AddRow("test", "overdue_mv", "2", nil, "Overdue", nil, nil)
+	mock.ExpectQuery(`SELECT .*, refresh_failed, update_time FROM .*tidb_mview_refresh_alert`).
+		WithArgs("test").
+		WillReturnRows(rows)
+
+	resp, err := QueryRefreshAlert(db, req)
+	if err != nil {
+		t.Fatalf("failed to query refresh alerts: %v", err)
+	}
+	if resp.Total != 2 || len(resp.Items) != 2 {
+		t.Fatalf("unexpected refresh alerts: %#v", resp)
+	}
+	if resp.Items[0].RefreshFailed != "YES" || resp.Items[1].RefreshFailed != "" {
+		t.Fatalf("unexpected refresh failure markers: %#v", resp.Items)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet SQL expectations: %v", err)
 	}
 }

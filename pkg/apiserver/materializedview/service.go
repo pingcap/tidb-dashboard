@@ -33,8 +33,17 @@ var materializedViewAllowedStatuses = map[string]struct{}{
 }
 
 var materializedViewAllowedRefreshMethods = map[string]struct{}{
-	"fast auto":       {},
-	"fast manual":     {},
+	"fast auto":                    {},
+	"fast manual":                  {},
+	"bounded fast auto":            {},
+	"bounded fast manual":          {},
+	"complete in place auto":       {},
+	"complete in place manual":     {},
+	"complete out of place auto":   {},
+	"complete out of place manual": {},
+	"complete delta apply auto":    {},
+	"complete delta apply manual":  {},
+	// Retain legacy COMPLETE method names for older history rows.
 	"complete auto":   {},
 	"complete manual": {},
 }
@@ -360,7 +369,7 @@ func buildRefreshAlertSelectStmt() string {
 		"CAST(mview_id AS CHAR) AS materialized_view_id",
 		"last_success_snapshot_time AS last_success_time",
 		"alert_level AS alert_type",
-		"CASE WHEN refresh_failed THEN 'Yes' ELSE '' END AS refresh_failed",
+		"refresh_failed",
 		"update_time",
 	}, ", ")
 }

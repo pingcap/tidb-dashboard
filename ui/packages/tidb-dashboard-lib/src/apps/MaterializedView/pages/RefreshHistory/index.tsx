@@ -47,6 +47,15 @@ const STATUS_OPTIONS = ['success', 'failed', 'running']
 const REFRESH_METHOD_OPTIONS = [
   'fast auto',
   'fast manual',
+  'bounded fast auto',
+  'bounded fast manual',
+  'complete in place auto',
+  'complete in place manual',
+  'complete out of place auto',
+  'complete out of place manual',
+  'complete delta apply auto',
+  'complete delta apply manual',
+  // Retain legacy COMPLETE method names for older history rows.
   'complete auto',
   'complete manual'
 ]

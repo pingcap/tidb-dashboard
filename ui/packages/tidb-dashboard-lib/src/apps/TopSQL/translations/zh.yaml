@@ -1,4 +1,6 @@
 topsql:
+  instance_select:
+    all_instances: 全部 {{type}} 实例
   nav_title: Top SQL
   alert_header:
     title: 该功能未启用

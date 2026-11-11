@@ -1,5 +1,5 @@
-import { task, parallel } from 'gulp'
-import shell from 'gulp-shell'
+const { task, parallel } = require('gulp')
+const shell = require('gulp-shell')
 
 // below way doesn't work
 // task('tsc:dev', parallel(shell.task('tsc -w'), shell.task('tsc-alias -w')))

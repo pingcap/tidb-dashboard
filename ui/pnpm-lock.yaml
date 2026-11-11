@@ -39,9 +39,6 @@ importers:
       '@openapitools/openapi-generator-cli':
         specifier: ^2.5.1
         version: 2.5.1
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       gulp:
         specifier: ^4.0.2
         version: 4.0.2
@@ -61,9 +58,6 @@ importers:
       '@openapitools/openapi-generator-cli':
         specifier: ^2.5.1
         version: 2.5.1
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       gulp:
         specifier: ^4.0.2
         version: 4.0.2
@@ -218,9 +212,6 @@ importers:
       eslint-watch:
         specifier: ^8.0.0
         version: 8.0.0(eslint@8.20.0)
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       fs-extra:
         specifier: ^10.0.0
         version: 10.1.0
@@ -297,9 +288,6 @@ importers:
       eslint-watch:
         specifier: ^8.0.0
         version: 8.0.0(eslint@8.20.0)
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       fs-extra:
         specifier: ^10.0.0
         version: 10.0.1
@@ -472,9 +460,6 @@ importers:
       eslint-watch:
         specifier: ^8.0.0
         version: 8.0.0(eslint@8.20.0)
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       fs-extra:
         specifier: ^10.0.0
         version: 10.1.0
@@ -704,9 +689,6 @@ importers:
       eslint-watch:
         specifier: ^8.0.0
         version: 8.0.0(eslint@8.20.0)
-      esm:
-        specifier: ^3.2.25
-        version: 3.2.25
       fs-extra:
         specifier: ^10.0.0
         version: 10.1.0
@@ -8784,11 +8766,6 @@ packages:
       v8-compile-cache: 2.3.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /esm@3.2.25:
-    resolution: {integrity: sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==}
-    engines: {node: '>=6'}
     dev: true
 
   /espree@9.3.2:
@@ -17284,6 +17261,7 @@ packages:
 
   /whatwg-encoding@1.0.5:
     resolution: {integrity: sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw==}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
     dependencies:
       iconv-lite: 0.4.24
     dev: true

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { SlowqueryModel } from '@lib/client'
 import { TextWrap } from '@lib/components'
 import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
+import { SlowQueryTimingModel } from './timings'
 
 //////////////////////////////////////////
 
@@ -46,7 +47,7 @@ function formatSessionConnectAttrs(value?: string | null) {
 //////////////////////////////////////////
 
 export function slowQueryColumns(
-  rows: SlowqueryModel[],
+  rows: SlowQueryTimingModel[],
   tableSchemaColumns: string[],
   showFullSQL?: boolean
 ): IColumn[] {
@@ -113,12 +114,14 @@ export function slowQueryColumns(
     tcf.bar.single('wait_ts', 's', rows),
     tcf.bar.single('wait_time', 's', rows),
     tcf.bar.single('backoff_time', 's', rows),
+    tcf.bar.single('backoff_total', 's', rows),
     tcf.bar.single('get_commit_ts_time', 's', rows),
     tcf.bar.single('local_latch_wait_time', 's', rows),
     tcf.bar.single('prewrite_time', 's', rows),
     tcf.bar.single('commit_time', 's', rows),
     tcf.bar.single('commit_backoff_time', 's', rows),
     tcf.bar.single('resolve_lock_time', 's', rows),
+    tcf.bar.single('read_resolve_lock_rpc_time', 's', rows),
     // cop
     tcf.bar.multiple({ sources: derivedFields.cop_proc_avg }, 's', rows),
     tcf.bar.multiple({ sources: derivedFields.cop_wait_avg }, 's', rows),

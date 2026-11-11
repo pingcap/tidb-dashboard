@@ -67,16 +67,20 @@ slow_query:
     wait_time_tooltip: 'The total time of Coprocessor request is prepared and wait to execute in {{distro.tikv}}, which may happen when retrieving a snapshot though Raft concensus protocol (note: {{distro.tikv}} waits requests in parallel so that this is not a wall time)'
     process_time: Coprocessor Process Time
     process_time_tooltip: 'The total time of Coprocessor request being executed in {{distro.tikv}} (note: {{distro.tikv}} executes requests in parallel so that this is not a wall time)'
+    backoff_total: Backoff Total
+    backoff_total_tooltip: 'Cumulative backoff sleep of recorded requests in the statement context. Overlaps with Backoff Time and Commit Backoff Time; do not add them. Parallel totals may exceed query wall time. Zero does not prove no backoff.'
+    read_resolve_lock_rpc_time: Read Resolve Lock Time
+    read_resolve_lock_rpc_time_tooltip: 'Cumulative recorded synchronous ResolveLocks call time on the read path, including status checks and retries within each call. Excludes lock-wait backoff after the call returns. Parallel totals may exceed query wall time. Unavailable statistics are shown as —.'
     backoff_time: Execution Backoff Time
-    backoff_time_tooltip: 'The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
+    backoff_time_tooltip: 'Cumulative backoff sleep of Coprocessor tasks. Point_Get and transaction commit backoff are excluded. Parallel totals may exceed query wall time.'
     lock_keys_time: Lock Keys Time
     lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
     get_commit_ts_time: Get Commit Ts Time
     get_commit_ts_time_tooltip: Time consumed when getting a commit timestamp for 2PC commit phase when transaction commits
     local_latch_wait_time: Local Latch Wait Time
     local_latch_wait_time_tooltip: Time consumed when {{distro.tidb}} waits for the lock in the current {{distro.tidb}} instance before 2PC commit phase when transaction commits
-    resolve_lock_time: Resolve Lock Time
-    resolve_lock_time_tooltip: Time consumed when {{distro.tidb}} resolves locks from other transactions in 2PC prewrite phase when transaction commits
+    resolve_lock_time: Commit Resolve Lock Time
+    resolve_lock_time_tooltip: 'Cumulative ResolveLocks call time during transaction commit, including prewrite. Includes status checks and retries within each call; excludes lock-wait backoff after the call returns.'
     prewrite_time: Prewrite Time
     prewrite_time_tooltip: Time consumed in 2PC prewrite phase when transaction commits
     wait_prewrite_binlog_time: Wait Binlog Prewrite Time

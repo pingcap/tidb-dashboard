@@ -52,6 +52,13 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 			s, _ := reflections.GetField(overview, fieldName)
 			var val string
 			switch t := s.(type) {
+			case *string:
+				// Preserve unavailable (NULL) versus a recorded empty string in exports.
+				if t == nil {
+					val = "NULL"
+				} else {
+					val = *t
+				}
 			case int:
 				if _, ok := timeFieldsMap[field]; ok {
 					val = time.Unix(int64(t), 0).Format(timeLayout)

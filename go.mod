@@ -45,7 +45,7 @@ require (
 	github.com/swaggo/http-swagger v1.2.6
 	github.com/swaggo/swag v1.7.9
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.etcd.io/etcd/client/pkg/v3 v3.5.15
+	go.etcd.io/etcd/client/pkg/v3 v3.5.33
 	go.etcd.io/etcd/client/v3 v3.5.15
 	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.12.0

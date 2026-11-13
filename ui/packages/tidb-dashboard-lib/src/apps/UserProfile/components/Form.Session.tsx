@@ -31,6 +31,8 @@ import { store } from '@lib/utils/store'
 import { UserProfileContext } from '../context'
 import dayjs from 'dayjs'
 
+const MAX_SHARE_EXPIRY_SECONDS = 30 * 24 * 60 * 60
+
 const SHARE_SESSION_EXPIRY_HOURS = [
   0.25,
   0.5,
@@ -42,8 +44,7 @@ const SHARE_SESSION_EXPIRY_HOURS = [
   24,
   24 * 3,
   24 * 7,
-  24 * 30,
-  24 * 365
+  24 * 30
 ]
 
 function RevokeSessionButton() {
@@ -117,8 +118,6 @@ function ShareSessionButton() {
         // expireCustom has value because it is required
         expireInSec =
           dayjs.unix(expireCustom.unix()).endOf('day').unix() - dayjs().unix()
-      } else if (expire === -1) {
-        expireInSec = 100 * 365 * 24 * 60 * 60 // 100 years
       } else {
         expireInSec = expire * 60 * 60
       }
@@ -224,9 +223,6 @@ function ShareSessionButton() {
                   <Select.Option value={0}>
                     {t('user_profile.share_session.form.custom_expiration')}
                   </Select.Option>
-                  <Select.Option value={-1}>
-                    {t('user_profile.share_session.form.no_expiration')}
-                  </Select.Option>
                 </Select>
               </Form.Item>
               <Form.Item
@@ -242,11 +238,15 @@ function ShareSessionButton() {
                         rules={[{ required: true }]}
                       >
                         <DatePicker
-                          disabledDate={(date) =>
-                            dayjs()
-                              .endOf('day')
-                              .isAfter(dayjs.unix(date.unix()))
-                          }
+                          disabledDate={(date) => {
+                            const now = dayjs()
+                            const selectedDate = dayjs.unix(date.unix())
+                            return (
+                              now.endOf('day').isAfter(selectedDate) ||
+                              selectedDate.endOf('day').unix() - now.unix() >
+                                MAX_SHARE_EXPIRY_SECONDS
+                            )
+                          }}
                         />
                       </Form.Item>
                     )

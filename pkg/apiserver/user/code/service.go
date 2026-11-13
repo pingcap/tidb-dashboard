@@ -22,13 +22,8 @@ var (
 	ErrShareFailed = ErrNS.NewType("share_failed")
 )
 
-// after allow user customize the expiration and support no expiration
-// we should remove the following check
-//
-// const (
-// 	// Max permitted lifetime of a shared session.
-// 	MaxSessionShareExpiry = time.Hour * 24 * 30
-// )
+// MaxSessionShareExpiry is the longest permitted lifetime of a sharing code.
+const MaxSessionShareExpiry = 30 * 24 * time.Hour
 
 type Service struct {
 	sharingSecret *[32]byte
@@ -86,13 +81,7 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 		return nil
 	}
 
-	// after allow user customize the expiration and support no expiration
-	// we should remove the following check
-	//
-	// if expireIn > MaxSessionShareExpiry {
-	// 	return nil
-	// }
-	if expireIn < 0 {
+	if expireIn < 0 || expireIn > MaxSessionShareExpiry {
 		return nil
 	}
 

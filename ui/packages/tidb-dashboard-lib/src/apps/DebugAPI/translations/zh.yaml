@@ -15,8 +15,11 @@ debug_api:
     table_id_dropdown: 选择或输入一个数据表 ID
   tidb:
     endpoints:
-      tidb_stats_by_table_timestamp_desc: 时间戳应当在 GC Safe Point 以后
       tidb_pprof_desc: seconds 参数仅对 kind=profile 和 kind=trace 生效
+
+      # Old tidb-dashboard backends still list this endpoint. TiDB removed its route
+      # with the historical stats feature in https://github.com/pingcap/tidb/pull/69889.
+      tidb_stats_by_table_timestamp_desc: 时间戳应当在 GC Safe Point 以后
 
       # for old tidb-dashboard backend api before 5.4.0
       tidb_stats_dump_timestamp_desc: 时间戳应当在 GC Safe Point 以后

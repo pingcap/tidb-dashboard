@@ -1,4 +1,6 @@
 topsql:
+  instance_select:
+    all_instances: 'All {{type}} instances'
   nav_title: Top SQL
   alert_header:
     title: Feature Not Enabled

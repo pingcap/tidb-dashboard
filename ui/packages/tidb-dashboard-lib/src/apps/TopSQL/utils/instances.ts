@@ -1,5 +1,9 @@
 import type { TopsqlInstanceItem } from '@lib/client'
 
+// ng-monitoring stores cross-instance sums under this pseudo instance and lists it
+// in /topsql/instances only when the aggregation feature is enabled server-side.
+export const AGGREGATE_INSTANCE = '*'
+
 export interface TopSQLInstanceOptions {
   allowedInstanceTypes?: Array<'tidb' | 'tikv'>
   requireListedInstance?: boolean
@@ -58,8 +62,11 @@ export function resolveTopSQLInstance(
     instance: instanceName,
     instance_type: instanceType
   }
+  // The "*" pseudo instance only exists while ng-monitoring aggregation is on, so an
+  // unlisted "*" must not be kept: it would keep fetching empty data.
   if (
     !options.requireListedInstance &&
+    instanceName !== AGGREGATE_INSTANCE &&
     instanceName &&
     instanceType &&
     isTopSQLInstanceAllowed(requestedInstance, options)
@@ -74,6 +81,7 @@ export function resolveTopSQLInstance(
   if (
     !options.requireListedInstance &&
     storedInstance &&
+    storedInstance.instance !== AGGREGATE_INSTANCE &&
     isTopSQLInstanceAllowed(storedInstance, options)
   ) {
     return storedInstance

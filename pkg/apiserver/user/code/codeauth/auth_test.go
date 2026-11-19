@@ -30,7 +30,7 @@ func TestRevokedSSOSharingCodeCannotMintOrUseSession(t *testing.T) {
 	sharing := code.NewService()
 	sharingCode := sharing.SharingCodeFromSession(&utils.SessionUser{
 		Version: utils.SessionVersion, IsShareable: true, HasTiDBAuth: true,
-		TiDBUsername: "root", SSOConfigRevision: "authorized-config",
+		TiDBUsername: "root", SSOConfigRevision: "authorized-config", OIDCIDToken: "original-idp-token",
 	}, time.Hour, false)
 	require.NotNil(t, sharingCode)
 	auth := user.NewAuthService(featureflag.NewRegistry("999.999.999"))

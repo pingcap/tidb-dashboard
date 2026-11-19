@@ -10,6 +10,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -189,6 +190,15 @@ func TestConfigRewriteRequiresFreshCredentialsAndRevokesSessions(t *testing.T) {
 	shared := sharing.NewSessionFromSharingCode(*sharingCode)
 	require.NotNil(t, shared)
 	require.Equal(t, session.SSOConfigRevision, shared.SSOConfigRevision)
+	require.Empty(t, shared.OIDCIDToken)
+	require.True(t, s.IsSessionValid(shared))
+	// Sharing must preserve the original session's IdP logout hint.
+	require.NotEmpty(t, session.OIDCIDToken)
+	logoutURL, err := s.BuildEndSessionURL(session, "http://dashboard/")
+	require.NoError(t, err)
+	parsedLogoutURL, err := url.Parse(logoutURL)
+	require.NoError(t, err)
+	require.Equal(t, session.OIDCIDToken, parsedLogoutURL.Query().Get("id_token_hint"))
 
 	// A writeable SQL user cannot carry the old root delegation to another IdP,
 	// either by omitting credentials, substituting its own account, or guessing root's password.

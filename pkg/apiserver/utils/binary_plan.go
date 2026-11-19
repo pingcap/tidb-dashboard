@@ -997,7 +997,7 @@ func GenerateBinaryPlanText(db *gorm.DB, b string) (string, error) {
 		Text string `gorm:"column:binary_plan_text"`
 	}
 	ret := &binaryPlanText{}
-	err := db.Raw(fmt.Sprintf("select tidb_decode_binary_plan('%s') as binary_plan_text", b)).Find(ret).Error
+	err := db.Raw("select tidb_decode_binary_plan(?) as binary_plan_text", b).Find(ret).Error
 	if err != nil {
 		return "", err
 	}

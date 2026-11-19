@@ -22,7 +22,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 
 Declare the global environment variable:
 
-> **Note:**
+> [!Note]
 >
 > After the installation, TiUP displays the absolute path of the corresponding `profile` file. You need to modify the following `source` command according to the path.
 

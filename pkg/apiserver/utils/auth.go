@@ -34,8 +34,8 @@ type SessionUser struct {
 	// This field only exists for CodeAuth.
 	SharedSessionExpireAt time.Time `msgpack:"-"`
 
-	// This field only exists for SSOAuth
-	OIDCIDToken string `json:",omitempty"`
+	// Only the original SSO session needs the ID token for IdP logout; shared sessions use CodeAuth.
+	OIDCIDToken string `msgpack:"-" json:",omitempty"`
 	// Also preserved in sharing codes so config changes revoke derived sessions.
 	SSOConfigRevision string `json:",omitempty"`
 

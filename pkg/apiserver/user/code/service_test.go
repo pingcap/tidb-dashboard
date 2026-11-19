@@ -3,6 +3,7 @@
 package code
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"math"
 	"net/http"
@@ -12,11 +13,72 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gtank/cryptopasta"
 	"github.com/stretchr/testify/require"
+	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
+
+func TestSharingCodeDoesNotDelegateOIDCIDToken(t *testing.T) {
+	s := NewService()
+	original := &utils.SessionUser{
+		Version: utils.SessionVersion, DisplayName: "SSO user", HasTiDBAuth: true,
+		TiDBUsername: "operator", TiDBPassword: "sql-password", IsShareable: true, IsWriteable: true,
+		OIDCIDToken: "idp-token-for-original-session", SSOConfigRevision: "current-revision",
+	}
+	sharingCode := s.SharingCodeFromSession(original, time.Hour, true)
+	require.NotNil(t, sharingCode)
+	encrypted, err := hex.DecodeString(*sharingCode)
+	require.NoError(t, err)
+	plain, err := cryptopasta.Decrypt(encrypted, s.loadShareingSecret())
+	require.NoError(t, err)
+	var payload struct {
+		Session         map[string]interface{}
+		ExpireAt        time.Time
+		RevokeWritePriv bool
+	}
+	require.NoError(t, msgpack.Unmarshal(plain, &payload))
+	require.NotContains(t, payload.Session, "OIDCIDToken", "the ID token must not be serialized into the sharing code")
+
+	for _, tc := range []struct {
+		name string
+		code string
+	}{
+		{"new code", *sharingCode},
+		{"old code containing an ID token", func() string {
+			// Reproduce the previous wire format without changing the session version or encryption key.
+			payload.Session["OIDCIDToken"] = original.OIDCIDToken
+			legacyPlain, marshalErr := msgpack.Marshal(payload)
+			require.NoError(t, marshalErr)
+			legacyEncrypted, encryptErr := cryptopasta.Encrypt(legacyPlain, s.loadShareingSecret())
+			require.NoError(t, encryptErr)
+			return hex.EncodeToString(legacyEncrypted)
+		}()},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			shared := s.NewSessionFromSharingCode(tc.code)
+			require.NotNil(t, shared)
+			require.Empty(t, shared.OIDCIDToken)
+			require.Equal(t, original.TiDBUsername, shared.TiDBUsername)
+			require.Equal(t, original.TiDBPassword, shared.TiDBPassword)
+			require.True(t, shared.HasTiDBAuth)
+			require.Equal(t, original.SSOConfigRevision, shared.SSOConfigRevision)
+			require.WithinDuration(t, payload.ExpireAt, shared.SharedSessionExpireAt, time.Millisecond)
+			require.False(t, shared.IsShareable)
+			require.False(t, shared.IsWriteable)
+		})
+	}
+
+	// The original SSO session still needs its ID token for IdP logout, including after JWT serialization.
+	originalJSON, err := json.Marshal(original)
+	require.NoError(t, err)
+	var restored utils.SessionUser
+	require.NoError(t, json.Unmarshal(originalJSON, &restored))
+	require.Equal(t, "idp-token-for-original-session", restored.OIDCIDToken)
+	require.True(t, original.IsWriteable)
+}
 
 func TestSharingCodeExpiryLimit(t *testing.T) {
 	s := NewService()

@@ -40,6 +40,12 @@ slow_query:
     index_names_tooltip: SQL 查询执行时使用的索引名称
     stats: 使用的统计信息
     backoff_types: 重试类型
+    prewrite_backoff_types: Prewrite Backoff 类型
+    commit_backoff_types: Commit Backoff 类型
+    prewrite_backoff_types_tooltip: 累计 backoff 最长的 prewrite 批次记录的类型，不涵盖语句的全部重试。
+    commit_backoff_types_tooltip: 前台 commit 路径记录的 backoff 类型，不涵盖语句的全部重试。
+    phase_backoff_unavailable: 当前数据源未提供
+    phase_backoff_empty: 未记录类型
     user: 执行用户名
     user_tooltip: 执行该 SQL 查询的用户名，可能存在多个执行用户，仅显示其中某一个
     host: 客户端地址

@@ -14,12 +14,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gtank/cryptopasta"
 	"github.com/minio/sio"
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -81,7 +81,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	defer csvFile.Close() // #nosec
 
 	// generate encryption key
-	secretKey := *cryptopasta.NewEncryptionKey()
+	secretKey := *cryptoutil.NewKey()
 
 	pr, pw := io.Pipe()
 	go func() {

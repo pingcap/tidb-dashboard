@@ -9,12 +9,12 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 )
 
 var (
@@ -37,7 +37,7 @@ type sharedSession struct {
 
 func NewService() *Service {
 	return &Service{
-		sharingSecret: cryptopasta.NewEncryptionKey(),
+		sharingSecret: cryptoutil.NewKey(),
 	}
 }
 
@@ -52,7 +52,7 @@ func (s *Service) NewSessionFromSharingCode(codeInHex string) *utils.SessionUser
 		return nil
 	}
 
-	b, err := cryptopasta.Decrypt(encrypted, s.loadShareingSecret())
+	b, err := cryptoutil.Decrypt(encrypted, s.loadShareingSecret())
 	if err != nil {
 		return nil
 	}
@@ -97,7 +97,7 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 		return nil
 	}
 
-	encrypted, err := cryptopasta.Encrypt(b, s.loadShareingSecret())
+	encrypted, err := cryptoutil.Encrypt(b, s.loadShareingSecret())
 	if err != nil {
 		return nil
 	}
@@ -108,7 +108,7 @@ func (s *Service) SharingCodeFromSession(session *utils.SessionUser, expireIn ti
 
 func (s *Service) ResetEncryptionKey() {
 	//nolint:gosec // Using unsafe is necessary because atomic pointer operations are required.
-	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret)), unsafe.Pointer(cryptopasta.NewEncryptionKey()))
+	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&s.sharingSecret)), unsafe.Pointer(cryptoutil.NewKey()))
 }
 
 func (s *Service) loadShareingSecret() *[32]byte {

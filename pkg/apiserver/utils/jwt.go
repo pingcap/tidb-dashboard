@@ -7,10 +7,11 @@ import (
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v4"
-	"github.com/gtank/cryptopasta"
+
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 )
 
-var hmacSampleSecret = cryptopasta.NewEncryptionKey()
+var hmacSampleSecret = cryptoutil.NewKey()
 
 // Claims is a struct that will be encoded to a JWT.
 type Claims struct {

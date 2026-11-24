@@ -14,12 +14,12 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 	"github.com/pingcap/tidb-dashboard/util/featureflag"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -84,14 +84,14 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
 	switch len(secretStr) {
 	case 0:
-		secret = cryptopasta.NewEncryptionKey()
+		secret = cryptoutil.NewKey()
 	case 32:
 		log.Info("DASHBOARD_SESSION_SECRET is overridden from env var")
 		secret = &[32]byte{}
 		copy(secret[:], secretStr)
 	default:
 		log.Warn("DASHBOARD_SESSION_SECRET does not meet the 32 byte size requirement, ignored")
-		secret = cryptopasta.NewEncryptionKey()
+		secret = cryptoutil.NewKey()
 	}
 
 	privateKey, publicKey, err := GenerateKey()
@@ -145,7 +145,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			if err != nil {
 				return jwt.MapClaims{}
 			}
-			encrypted, err := cryptopasta.Encrypt(plain, secret)
+			encrypted, err := cryptoutil.Encrypt(plain, secret)
 			if err != nil {
 				return jwt.MapClaims{}
 			}
@@ -164,7 +164,7 @@ func NewAuthService(featureFlags *featureflag.Registry) *AuthService {
 			if err != nil {
 				return nil
 			}
-			decrypted, err := cryptopasta.Decrypt(decoded, secret)
+			decrypted, err := cryptoutil.Decrypt(decoded, secret)
 			if err != nil {
 				return nil
 			}

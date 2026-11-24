@@ -11,10 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v4"
-	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/minio/sio"
 
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 	"github.com/pingcap/tidb-dashboard/util/nocopy"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
@@ -33,7 +33,7 @@ type Handler struct {
 
 func New() *Handler {
 	return &Handler{
-		secret: cryptopasta.NewEncryptionKey()[:],
+		secret: cryptoutil.NewKey()[:],
 	}
 }
 

@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gtank/cryptopasta"
 	"github.com/stretchr/testify/require"
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -32,7 +32,7 @@ func TestSharingCodeDoesNotDelegateOIDCIDToken(t *testing.T) {
 	require.NotNil(t, sharingCode)
 	encrypted, err := hex.DecodeString(*sharingCode)
 	require.NoError(t, err)
-	plain, err := cryptopasta.Decrypt(encrypted, s.loadShareingSecret())
+	plain, err := cryptoutil.Decrypt(encrypted, s.loadShareingSecret())
 	require.NoError(t, err)
 	var payload struct {
 		Session         map[string]interface{}
@@ -52,7 +52,7 @@ func TestSharingCodeDoesNotDelegateOIDCIDToken(t *testing.T) {
 			payload.Session["OIDCIDToken"] = original.OIDCIDToken
 			legacyPlain, marshalErr := msgpack.Marshal(payload)
 			require.NoError(t, marshalErr)
-			legacyEncrypted, encryptErr := cryptopasta.Encrypt(legacyPlain, s.loadShareingSecret())
+			legacyEncrypted, encryptErr := cryptoutil.Encrypt(legacyPlain, s.loadShareingSecret())
 			require.NoError(t, encryptErr)
 			return hex.EncodeToString(legacyEncrypted)
 		}()},

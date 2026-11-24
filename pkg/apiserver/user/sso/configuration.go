@@ -7,11 +7,11 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/gtank/cryptopasta"
 	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 	"github.com/pingcap/tidb-dashboard/util/rest"
 )
 
@@ -116,7 +116,7 @@ func (s *Service) saveConfigLocked(req SetConfigRequest) (*SSOImpersonationModel
 		if err != nil {
 			return nil, err
 		}
-		encrypted, err := cryptopasta.Encrypt([]byte(req.Password), key)
+		encrypted, err := cryptoutil.Encrypt([]byte(req.Password), key)
 		if err != nil {
 			return nil, err
 		}

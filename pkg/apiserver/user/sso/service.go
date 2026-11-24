@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
@@ -28,6 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/util/cryptoutil"
 )
 
 var (
@@ -81,7 +81,7 @@ func NewService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Servi
 		verifySQLUser: func(name, password string) (bool, error) {
 			return user.VerifySQLUser(p.TiDBClient, name, password)
 		},
-		oauthStateSecret: cryptopasta.NewHMACKey()[:],
+		oauthStateSecret: cryptoutil.NewKey()[:],
 		encKeyPath:       path.Join(config.DataDir, "dbek.bin"),
 		encKeyLock:       sync.Mutex{},
 	}
@@ -129,7 +129,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 	}
 
 	// Try to create a key otherwise
-	key = cryptopasta.NewEncryptionKey()
+	key = cryptoutil.NewKey()
 	err := os.WriteFile(s.encKeyPath, key[:], 0o400) // read only for owner
 	if err != nil {
 		return nil, fmt.Errorf("persist key failed: %v", err)
@@ -160,7 +160,7 @@ func (s *Service) getAndDecryptImpersonation(revision string) (string, string, e
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
 	}
-	decryptedPass, err := cryptopasta.Decrypt(encrypted, key)
+	decryptedPass, err := cryptoutil.Decrypt(encrypted, key)
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
 	}

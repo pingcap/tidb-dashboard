@@ -1,6 +1,12 @@
 import { SQLWithHover } from "@pingcap-incubator/tidb-dashboard-lib-biz-ui"
 import { Trans, useTn } from "@pingcap-incubator/tidb-dashboard-lib-utils"
-import { Box, Kbd, Typography, openConfirmModal } from "@tidbcloud/uikit"
+import {
+  Box,
+  Kbd,
+  Tooltip,
+  Typography,
+  openConfirmModal,
+} from "@tidbcloud/uikit"
 import { useMemo } from "react"
 
 import { TableColsFactory } from "../../../_shared/cols-factory"
@@ -10,6 +16,7 @@ import {
   useSelectedSlowQueryState,
   useTimeRangeValueState,
 } from "../../shared-state/memory-state"
+import { formatPhaseBackoff } from "../../utils/phase-backoff"
 
 const REMEMBER_KEY = "slow-query.press_ctrl_to_open_in_new_tab.tip.remember"
 
@@ -114,6 +121,35 @@ export function useListTableColumns() {
       tcf.text("index_names"),
       tcf.text("stats"),
       tcf.text("backoff_types"),
+      tcf.text("prewrite_backoff_types").patchConfig({
+        accessorFn: (row) => {
+          const text = formatPhaseBackoff(
+            row.prewrite_backoff_types,
+            tk("fields.phase_backoff_unavailable"),
+            tk("fields.phase_backoff_empty"),
+          )
+          return (
+            <Tooltip label={text}>
+              <Typography truncate>{text}</Typography>
+            </Tooltip>
+          )
+        },
+      }),
+      tcf.text("commit_backoff_types").patchConfig({
+        accessorFn: (row) => {
+          const text = formatPhaseBackoff(
+            row.commit_backoff_types,
+            tk("fields.phase_backoff_unavailable"),
+            tk("fields.phase_backoff_empty"),
+          )
+          return (
+            <Tooltip label={text}>
+              <Typography truncate>{text}</Typography>
+            </Tooltip>
+          )
+        },
+      }),
+
       // connection
       tcf.text("user"),
       tcf.text("host"),

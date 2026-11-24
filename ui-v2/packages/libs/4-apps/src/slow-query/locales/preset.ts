@@ -38,6 +38,18 @@ function useLocales() {
   tk("fields.index_names.desc", "The name of the used index")
   tk("fields.stats", "Used Statistics")
   tk("fields.backoff_types", "Backoff Types")
+  tk("fields.prewrite_backoff_types", "Prewrite Backoff Types")
+  tk("fields.commit_backoff_types", "Commit Backoff Types")
+  tk(
+    "fields.prewrite_backoff_types.desc",
+    "Recorded types from the prewrite batch with the longest cumulative backoff; not all statement retries.",
+  )
+  tk(
+    "fields.commit_backoff_types.desc",
+    "Recorded foreground commit backoff types; not all statement retries.",
+  )
+  tk("fields.phase_backoff_unavailable", "Unavailable in current data source")
+  tk("fields.phase_backoff_empty", "No types recorded")
   tk("fields.user", "Execution User")
   tk("fields.user.desc", "The user that executes the query")
   tk("fields.host", "Client Address")
@@ -206,7 +218,10 @@ function useLocales() {
     "fields.ia_remote_read_segment_size.desc",
     "Total number of bytes read from IA remote segments",
   )
-  tk("fields.ia_remote_read_segment_wait_time", "IA Remote Read Segment Wait Time")
+  tk(
+    "fields.ia_remote_read_segment_wait_time",
+    "IA Remote Read Segment Wait Time",
+  )
   tk(
     "fields.ia_remote_read_segment_wait_time.desc",
     "The wait time spent reading IA remote segments",

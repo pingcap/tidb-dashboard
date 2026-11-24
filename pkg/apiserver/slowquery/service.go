@@ -73,7 +73,7 @@ func (s *Service) getList(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	results, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.Wrap(err, "slow query request failed"))
 		return
 	}
 
@@ -144,7 +144,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	list, err := QuerySlowLogList(&req, s.params.SysSchema, db.Table(SlowQueryTable))
 	if err != nil {
-		rest.Error(c, rest.ErrBadRequest.NewWithNoMessage())
+		rest.Error(c, rest.ErrBadRequest.Wrap(err, "slow query export request failed"))
 		return
 	}
 	if len(list) == 0 {

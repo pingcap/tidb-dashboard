@@ -131,7 +131,7 @@ export class TableColumnFactory {
     })
   }
 
-  singleBar<T extends string, U extends { [K in T]?: number }>(
+  singleBar<T extends string, U extends { [K in T]?: number | null }>(
     fieldName: T,
     unit: string,
     rows?: U[]
@@ -143,6 +143,9 @@ export class TableColumnFactory {
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
       onRender: (rec: U) => {
+        if (rec[fieldName] == null) {
+          return '—'
+        }
         const fmtVal = formatVal(rec[fieldName]!, unit)
         return (
           <Bar textWidth={70} value={rec[fieldName]!} capacity={capacity}>
@@ -271,7 +274,7 @@ export class TableColumnFactory {
 export class BarColumn {
   constructor(public factory: TableColumnFactory) {}
 
-  single<T extends string, U extends { [K in T]?: number }>(
+  single<T extends string, U extends { [K in T]?: number | null }>(
     fieldName: T,
     unit: string,
     rows?: U[]

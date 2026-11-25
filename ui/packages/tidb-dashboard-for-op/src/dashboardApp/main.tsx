@@ -127,6 +127,18 @@ async function webPageStart() {
 
   const registry = new AppRegistry(options)
 
+  const baseTitle = `${distro().tidb} Dashboard`
+  const updateDocumentTitle = () => {
+    const app = registry.getActiveApp()
+    const titleKey = app && `${app.id}.nav_title`
+    document.title =
+      titleKey && i18next.exists(titleKey)
+        ? `${i18next.t(titleKey)} - ${baseTitle}`
+        : baseTitle
+  }
+  window.addEventListener('single-spa:routing-event', updateDocumentTitle)
+  i18next.on('languageChanged', updateDocumentTitle)
+
   NProgress.configure({
     showSpinner: false
   })
